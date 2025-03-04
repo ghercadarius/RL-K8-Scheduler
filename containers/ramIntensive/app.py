@@ -1,4 +1,5 @@
 import random
+import sys
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -9,7 +10,8 @@ dataset = []
 def load():
     global dataset
     size_mb = int(request.json.get('size_mb', 100))
-    mb_factor = 1024 * 1024 // 8
+    print("Loading data of size {} MB".format(size_mb), file=sys.stderr)
+    mb_factor = 1024 * 1024 // 40
     dataset = [random.random() for _ in range(size_mb * mb_factor)]
     return jsonify({"status": "loaded", "size_mb": size_mb})
 

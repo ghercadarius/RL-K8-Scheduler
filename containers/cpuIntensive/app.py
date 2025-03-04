@@ -1,8 +1,13 @@
 import os
 from datetime import datetime
+import sys
+import psutil
+import multiprocessing
 
 import requests
 from flask import Flask, request, jsonify
+
+num_cores = multiprocessing.cpu_count()
 
 app = Flask(__name__)
 print("Server started")
@@ -12,7 +17,7 @@ totalFibonacciCalls = 1
 def fibonacci(n):
     global totalFibonacciCalls
     totalFibonacciCalls += 1
-    if totalFibonacciCalls % 3000 == 0:
+    if totalFibonacciCalls % 50000 == 0:
         print(f"Total Fibonacci calls: {totalFibonacciCalls}")
     if n <= 1:
         return n
@@ -23,6 +28,10 @@ def fibonacci(n):
 def compute():
     data = request.json
     n = int(data.get('input', 10))
+    blocked_cores_fact = int(data.get('blocked_factor', 50)) / 100
+    print("Blocking cores factor {} and nr of cores is {}".format(blocked_cores_fact, int(num_cores * blocked_cores_fact)), file=sys.stderr)
+    allowed_cores = list(range(int(num_cores * blocked_cores_fact)))
+    psutil.Process().cpu_affinity(allowed_cores)
     result = fibonacci(n)
     return jsonify({"result": result})
 
