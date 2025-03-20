@@ -1,1 +1,7 @@
 Notite licenta.docx
+.vscode/settings.json
+clusters/master.qcow2
+clusters/worker1.qcow2
+clusters/worker2.qcow2
+clusters/worker3.qcow2
+clusters/ubuntu-base.qcow2

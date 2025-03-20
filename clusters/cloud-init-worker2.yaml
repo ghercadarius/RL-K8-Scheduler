@@ -1,0 +1,53 @@
+#cloud-config
+
+users:
+  - default
+  - name: kubernetes
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    shell: /bin/bash
+    passwd: $6$rounds=4096$ZMReQfwhYfCWjz01$qdcmo5KGuMBWEzA.uSWnOI9NYC0nKpPvGQuWpeEvOVydAs5YFZDoPRXJ8vJCSGHyys4Ji6pCEJ.QwnHO0OJod0
+    lock_passwd: Optional
+    chpasswd: { expire: False }
+    ssh_pwauth: True
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCPQXNs5TNhLcxSUaV4UiskTcBtZxwZKesa748AKr6TvP/V2fDoL+J5nuTMn2xjAUpy9bDXY5T/O6Fk4R1nVcOuG8q7MPFKw24HuwM5G1lKtY+ZsH53LdHUakYzlEwnmZQo5sRzUo5K2xrJ8DKODeCWKoRGXef/t3BaRCGZsF1JZcoxyZeJub6CRWwmx7p3nbTzyrYwwa+VLGkU4F2Yd345rbNm/+3NS7er8VbJodnMQQ0XVCiIYeYBhKkQtaeVj2jpquexJS+j1aV67/ARQg8RxGkyakRgRUM/LXTTLtaFOleqXJGZ4HRAwzYf/HpBBBrJBaDzq/oz8zUIycRmm6C10RvDVtNYQaBqWYWqaWBdZFhhQe8yIJJmYXhuPxEEH1B6POdzN7KuU/jhxA+7VvltxD07Og8p86FdObVPYPg6TN860pIKof4fyP5zWh3XRH1TMrCxc/Lh8U1Gd12qzItD3bXjO1heE2+q+rEQQ5BF/z4KTAuSFdKGBoXYy1SSnxybzGDfN1KyaRehVDCKHTTSrpeltrDuWVDOQvYarmn08k6e6+uOMiMpKiaMVxgB0iORjJR9IxNaAafpY5dF6wQBPoiLwB/gnufblAI7rxaX6LjOt7fbyERFOI3gQnHBDM8QA16BQccWO2WSiqn0jHWhpcg9TbAemke/9H8Hh1F3hQ== ghercadarius@gmail.com
+
+hostname: k8s-node-worker2
+preserve_hostname: false
+
+network:
+  version: 2
+  ethernets:
+    ens3:
+      dhcp4: true
+      addresses:
+        - 192.168.122.100/24
+      gateway4: 192.168.122.1
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 8.8.4.4
+
+packages:
+  - qemu-guest-agent
+  - curl
+  - apt-transport-https
+  - ca-certificates
+  - containerd
+  - kubeadm
+  - kubelet
+  - kubectl
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+  - modprobe overlay
+  - modprobe br_netfilter
+  - sysctl -w net.bridge.bridge-nf-call-iptables=1
+  - sysctl -w net.ipv4.ip_forward=1
+  - echo "net.bridge.bridge-nf-call-iptables=1" >> /etc/sysctl.conf
+  - echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+  - dhclient -v ens3
+  - echo "waiting for master to be ready..."
+  - until [ -f /root/kubeadm-join.sh ]; do sleep 5; done
+  - chmod +x /root/kubeadm-join.sh
+  - bash /root/kubeadm-join.sh
