@@ -6,6 +6,8 @@ IMAGE_FILE="ubuntu-base.qcow2"
 if [ ! -f $IMAGE_FILE ]; then
     echo "downloading the base ubuntu image"
     wget $IMAGE_URL -O $IMAGE_FILE
+else
+    echo "base ubuntu image already exists"
 fi
 
 
