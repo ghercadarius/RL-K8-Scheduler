@@ -42,3 +42,22 @@ bash ./masterNode.sh
 echo "creating the kvm worker nodes"
 bash ./workerNodes.sh
 echo "created the kvms"
+
+echo "running the starting scripts in the vm's"
+sleep 30
+echo "10%"
+sleep 30
+echo "25%"
+sleep 30
+echo "40%"
+sleep 30
+echo "50%"
+sleep 30
+echo "60%"
+sleep 30
+echo "75%"
+sleep 30
+echo "90%"
+sleep 30
+echo "100%"
+echo "finished running the starting scripts in the vm's"
