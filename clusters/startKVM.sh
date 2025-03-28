@@ -12,16 +12,16 @@ fi
 
 
 cp ubuntu-base.qcow2 master.qcow2
-qemu-img resize master.qcow2 5G
+qemu-img resize master.qcow2 20G
 echo "make master disk file"
 cp ubuntu-base.qcow2 worker1.qcow2
-qemu-img resize worker1.qcow2 5G
+qemu-img resize worker1.qcow2 20G
 echo "make worker1 disk files"
 cp ubuntu-base.qcow2 worker2.qcow2
-qemu-img resize worker2.qcow2 5G
+qemu-img resize worker2.qcow2 20G
 echo "make worker2 disk files"
 cp ubuntu-base.qcow2 worker3.qcow2
-qemu-img resize worker3.qcow2 5G
+qemu-img resize worker3.qcow2 20G
 echo "make worker3 disk files"
 
 
@@ -48,13 +48,13 @@ sleep 30
 echo "10%"
 sleep 30
 echo "25%"
-sleep 30
+sleep 35
 echo "40%"
-sleep 30
+sleep 35
 echo "50%"
-sleep 30
+sleep 35
 echo "60%"
-sleep 30
+sleep 35
 echo "75%"
 sleep 30
 echo "90%"
