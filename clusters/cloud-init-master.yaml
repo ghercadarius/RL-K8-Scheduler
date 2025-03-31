@@ -32,28 +32,38 @@ packages:
   - curl
   - apt-transport-https
   - ca-certificates
-  - containerd
 
 runcmd:
   - systemctl enable --now qemu-guest-agent
-  - modprobe overlay
-  - modprobe br_netfilter
-  - sysctl -w net.bridge.bridge-nf-call-iptables=1
-  - sysctl -w net.ipv4.ip_forward=1
-  - echo "net.bridge.bridge-nf-call-iptables=1" >> /etc/sysctl.conf
-  - echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
   - dhclient -v ens3
-  - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-  - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-  - apt-get update
-  - apt-get install -y kubelet kubeadm kubectl kubernetes-cni
-  - apt-mark hold kubelet kubeadm kubectl
-  - systemctl enable --now kubelet
-  - until systemctl is-active --quiet containerd; do sleep 2; done
-  - sleep 10
-  - kubeadm init --pod-network-cidr=192.168.1.0/16 > /root/kubeadm-init.log
-  - mkdir -p /home/kubernetes/.kube
-  - cp -i /etc/kubernetes/admin.conf /home/kubernetes/.kube/config
-  - chown kubernetes:kubernetes /home/kubernetes/.kube/config
-  - echo "export KUBECONFIG=/home/kubernetes/.kube/config" >> /home/kubernetes/.bashrc
-  - kubeadm token create --print-join-command > /root/kubeadm-join.sh
+  - apt update
+  - apt install docker.io -y
+  - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  - apt update
+  - apt install kubeadm kubelet kubectl -y
+  - apt-mark hold kubeadm kubelet kubectl
+  - kubeadm version
+  - echo "finished" > ~/finished.txt
+  # - apt install docker.io
+  # - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  # - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  # - apt-get update
+  # - apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+  # - apt-mark hold kubelet kubeadm kubectl
+  # - systemctl enable --now kubelet
+  # - until systemctl is-active --quiet containerd; do sleep 2; done
+  # - echo "waiting for containerd to be active..."
+  # - sleep 30
+  # - until systemctl is-active --quiet kubelet; do sleep 2; done
+  # - echo "waiting for kubelet to be active..."
+  # - sleep 10
+  # - MASTER_IP=$(hostname -I | awk '{print $1}')
+  # - echo "starting kubeadm init with api server address $MASTER_IP"
+  # - kubeadm init --pod-network-cidr=192.168.1.0/16 --apiserver-advertise-address=$MASTER_IP > /root/kubeadm-init.log
+  # - until curl -k --silent http://127.0.0.1:2381/readyz | grep -q 'ok'; do sleep 2; done
+  # - mkdir -p /home/kubernetes/.kube
+  # - cp -i /etc/kubernetes/admin.conf /home/kubernetes/.kube/config
+  # - chown kubernetes:kubernetes /home/kubernetes/.kube/config
+  # - echo "export KUBECONFIG=/home/kubernetes/.kube/config" >> /home/kubernetes/.bashrc
+  # - kubeadm token create --print-join-command > /root/kubead./m-join.sh

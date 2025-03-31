@@ -37,20 +37,23 @@ packages:
 
 runcmd:
   - systemctl enable --now qemu-guest-agent
-  - modprobe overlay
-  - modprobe br_netfilter
-  - sysctl -w net.bridge.bridge-nf-call-iptables=1
-  - sysctl -w net.ipv4.ip_forward=1
-  - echo "net.bridge.bridge-nf-call-iptables=1" >> /etc/sysctl.conf
-  - echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
   - dhclient -v ens3
-  - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-  - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-  - apt-get update
-  - apt-get install -y kubelet kubeadm kubectl kubernetes-cni
-  - sudo apt-mark hold kubelet kubeadm kubectl
-  - systemctl enable --now kubelet
-  - echo "waiting for master to be ready..."
-  - until [ -f /root/kubeadm-join.sh ]; do sleep 5; done
-  - chmod +x /root/kubeadm-join.sh
-  - bash /root/kubeadm-join.sh
+  - apt update
+  - apt install docker.io -y
+  - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  - apt update
+  - apt install kubeadm kubelet kubectl -y
+  - apt-mark hold kubeadm kubelet kubectl
+  - kubeadm version
+  - echo "finished" > ~/finished.txt
+  # - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  # - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  # - apt-get update
+  # - apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+  # - sudo apt-mark hold kubelet kubeadm kubectl
+  # - systemctl enable --now kubelet
+  # - echo "waiting for master to be ready..."
+  # - until [ -f /root/kubeadm-join.sh ]; do sleep 5; done
+  # - chmod +x /root/kubeadm-join.sh
+  # - bash /root/kubeadm-join.sh

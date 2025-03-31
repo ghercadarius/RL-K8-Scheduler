@@ -1,0 +1,53 @@
+sudo apt update
+sudo apt install docker.io -y
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt update
+sudo apt install kubeadm kubelet kubectl -y
+sudo apt-mark hold kubeadm kubelet kubectl
+
+# avem kubernetes pe masini - comenzile de mai sus trb pe toate vm-urile
+
+# trb sa aducem containerd.conf pe toate vm-urile - il lasam la ~
+# script de rulat pe masina
+scp utilFiles/containerd.conf kubernetes@IP:~
+scp utilFiles/kubernetes.conf kubernetes@IP:~
+scp utilFiles/kubelet kubernetes@IP:~
+scp utilFiles/daemon.json kubernetes@IP:~
+
+# la fel cr ca merge si pt niste script uri de rulat in vm
+scp utilFiles/scriptMaster
+scp utilFiles/scriptWorker
+# asta pt fiecare ip
+
+# inapoi pe fiecare kvm
+
+
+
+cp ~/containerd.conf /etc/modules-load.d/containerd.conf
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+cp ~/kubernetes.conf /etc/sysctl.d/kubernetes.conf
+
+sudo sysctl --system
+
+# de aici in jos pt master node
+
+cp ~/kubelet /etc/default/kubelet
+
+sudo systemctl daemon-reload && sudo systemctl restart kubelet
+
+cp ~/daemon.json /etc/docker/daemon.json
+
+sudo systemctl daemon-reload && sudo systemctl restart docker
+
+
+
+
+
+
+
+
+
