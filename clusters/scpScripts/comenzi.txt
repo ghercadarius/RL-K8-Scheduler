@@ -14,6 +14,7 @@ scp utilFiles/containerd.conf kubernetes@IP:~
 scp utilFiles/kubernetes.conf kubernetes@IP:~
 scp utilFiles/kubelet kubernetes@IP:~
 scp utilFiles/daemon.json kubernetes@IP:~
+scp utilFIles/10-kubeadm.conf kubernetes@IP:~
 
 # la fel cr ca merge si pt niste script uri de rulat in vm
 scp utilFiles/scriptMaster
@@ -21,7 +22,6 @@ scp utilFiles/scriptWorker
 # asta pt fiecare ip
 
 # inapoi pe fiecare kvm
-
 
 
 cp ~/containerd.conf /etc/modules-load.d/containerd.conf
@@ -43,11 +43,33 @@ cp ~/daemon.json /etc/docker/daemon.json
 
 sudo systemctl daemon-reload && sudo systemctl restart docker
 
+sudo cp ~/10-kubeadm.conf /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
 
+sudo systemctl daemon-reload && sudo systemctl restart kubelet
 
+sudo kubeadm init --control-plane-endpoint=k8s-node-master --upload-certs
 
+mkdir -p $HOME/.kube
 
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+
+sudo kubeadm token create --print-join-command > ~/kubeadm-join.sh
+
+# aici trb inapoi pe main sa rulez comenzi sa copiez script-ul asta pe toti workerii
+
+scp master:~/kubeadm-join.sh worker:~/kubeadm-join.sh
+
+# de aici pe worker nodes
+
+sudo systemctl stop apparmor && sudo systemctl disable apparmor
+
+sudo systemctl restart containerd.service
 
 
 

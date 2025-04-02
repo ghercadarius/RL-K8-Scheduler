@@ -15,7 +15,7 @@ users:
 hostname: k8s-node-worker2
 preserve_hostname: false
 
-network:
+network-config:
   version: 2
   ethernets:
     ens3:
@@ -46,7 +46,7 @@ runcmd:
   - apt install kubeadm kubelet kubectl -y
   - apt-mark hold kubeadm kubelet kubectl
   - kubeadm version
-  - echo "finished" > ~/finished.txt
+  - echo "finished" > /home/kubernetes/finished.txt
   # - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
   # - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
   # - apt-get update
