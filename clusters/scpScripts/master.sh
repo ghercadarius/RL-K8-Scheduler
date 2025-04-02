@@ -2,6 +2,10 @@
 
 MY_IP=$(hostname -I | awk '{print $1}')
 
+# Save master IP to a file
+echo "$MY_IP" | sudo tee /home/kubernetes/master-ip.txt
+sudo chown kubernetes:kubernetes /home/kubernetes/master-ip.txt
+
 sudo cp /home/kubernetes/containerd.conf /etc/modules-load.d/containerd.conf
 
 sudo modprobe overlay

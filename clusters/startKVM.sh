@@ -158,6 +158,35 @@ while true; do
     break
 done
 
+# Copy master IP file to local machine
+scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    kubernetes@${MASTER_IP}:/home/kubernetes/master-ip.txt /tmp/master-ip.txt
+echo "✅ Copied master IP file locally"
+
+# Function to update hosts file on a worker
+update_worker_hosts() {
+    local worker_ip=$1
+    local worker_num=$2
+    
+    # Copy master IP file to worker
+    scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        /tmp/master-ip.txt kubernetes@${worker_ip}:/tmp/master-ip.txt
+    
+    # Update hosts file on worker
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        kubernetes@${worker_ip} 'sudo sh -c "echo \"$(cat /tmp/master-ip.txt) k8s-node-master\" >> /etc/hosts"'
+    
+    echo "✅ Updated hosts file on worker ${worker_num}"
+}
+
+# Update hosts file on each worker
+update_worker_hosts ${WORKER1_IP} 1
+update_worker_hosts ${WORKER2_IP} 2
+update_worker_hosts ${WORKER3_IP} 3
+
+# Clean up local master IP file
+rm /tmp/master-ip.txt
+
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${MASTER_IP}:/home/kubernetes/kubeadm-join.sh ./kubeadm-join.sh
 echo "copied kubeadm-join.sh to local machine"
 echo "copy the kubeadm-join.sh file to the worker nodes"
@@ -193,6 +222,11 @@ while true; do
     echo "all worker nodes finished configuration setup"
     break
 done
+
+echo "Getting kubeconfig from master node..."
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${MASTER_IP} "sudo cat /etc/kubernetes/admin.conf" > ~/.kube/config
+chmod 600 ~/.kube/config
+echo "✅ Copied kubeconfig to local machine"
 
 
 
