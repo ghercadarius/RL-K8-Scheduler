@@ -29,18 +29,6 @@ qemu-img resize worker3.qcow2 20G
 echo "make worker3 disk files"
 
 
-
-echo "destroying the default network"
-virsh net-destroy default
-echo "starting the default network"
-virsh net-start default
-echo "deleting the old leases"
-echo "Dar1us2oo3" | sudo -S rm -f /var/lib/libvirt/dnsmasq/default.leases
-echo "restarting the libvirtd service"
-echo "Dar1us2oo3" | sudo -S systemctl restart libvirtd
-echo "successfully restarted the libvirtd service"
-
-
 echo "creating the kvm master node"
 bash ./masterNode.sh
 echo "creating the kvm worker nodes"
@@ -54,6 +42,9 @@ MASTER_IP=$(virsh net-dhcp-leases default | grep k8s-node-master | awk '{print $
 
 if [[ -n "$MASTER_IP" ]]; then
     echo "✅ Master Node IP: $MASTER_IP"
+    echo "Dar1us2oo3" | sudo -S sed -i '/k8s-node-master/d' /etc/hosts
+    echo "${MASTER_IP} k8s-node-master" | sudo tee -a /etc/hosts > /dev/null
+    echo "added the k8s-node-master entry to the hosts file"
 else
     echo "❌ Error: Master Node IP not found!"
 fi
@@ -227,6 +218,14 @@ echo "Getting kubeconfig from master node..."
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${MASTER_IP} "sudo cat /etc/kubernetes/admin.conf" > ~/.kube/config
 chmod 600 ~/.kube/config
 echo "✅ Copied kubeconfig to local machine"
+
+sudo cp /etc/hosts /etc/hosts.bak
+
+# Replace the last occurrence of 'k8s-node-master' with the provided master_ip
+sudo tac /etc/hosts | sed "0,/\(.*\)k8s-node-master/s//${MASTER_IP} k8s-node-master/" | tac | sudo tee /etc/hosts > /dev/null
+
+echo "Updated /etc/hosts with master IP ${MASTER_IP}"
+
 
 
 

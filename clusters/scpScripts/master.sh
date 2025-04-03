@@ -27,7 +27,7 @@ sudo cp /home/kubernetes/10-kubeadm.conf /usr/lib/systemd/system/kubelet.service
 
 sudo systemctl daemon-reload && sudo systemctl restart kubelet
 
-sudo kubeadm init --control-plane-endpoint=k8s-node-master --pod-network-cidr=192.168.0.0/16 --upload-certs --apiserver-advertise-address=$MY_IP
+sudo kubeadm init  --apiserver-advertise-address=$MY_IP --control-plane-endpoint=k8s-node-master --pod-network-cidr=192.168.0.0/16 --upload-certs
 
 mkdir -p $HOME/.kube
 

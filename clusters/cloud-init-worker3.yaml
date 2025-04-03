@@ -15,7 +15,7 @@ users:
 hostname: k8s-node-worker3
 preserve_hostname: false
 
-network-config:
+network:
   version: 2
   ethernets:
     ens3:

@@ -18,6 +18,24 @@ virsh undefine k8s-worker2
 virsh shutdown k8s-worker3
 virsh undefine k8s-worker3
 
+echo "deleting the k8s-node-master entry from the hosts file"
+echo "Dar1us2oo3" | sudo -S sed -i '/k8s-node-master/d' /etc/hosts
+
+echo "deleting the default network to flush DHCP leases"
+virsh net-destroy default
+
+echo "Dar1us2oo3" | sudo pkill -f "dnsmasq.*default"
+
+
+echo "Dar1us2oo3" | sudo -S rm -f /var/lib/libvirt/dnsmasq/default.leases
+
+echo "restarting the libvirtd service"
+
+virsh net-start default
+
+echo "Dar1us2oo3" | sudo -S systemctl restart libvirtd
+echo "successfully restarted the libvirtd service and started the default network" 
+
 
 rm -f ./master.qcow2 ./worker1.qcow2 ./worker2.qcow2 ./worker3.qcow2
 
