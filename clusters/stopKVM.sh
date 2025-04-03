@@ -44,3 +44,15 @@ echo "deleted the disk files"
 echo "deleting the kubectl context"
 kubectl config delete-context kubernetes-admin@kubernetes
 echo "deleted the kubectl context"
+
+while true; do
+    remaining_vms=$(virsh list --all | awk 'NR>2 {print $2}' | grep -E "^k8s-")
+    if [ -z "$remaining_vms" ]; then
+        echo "All VMs have been removed"
+        break
+    else
+        echo "Waiting for the following VMs to be removed:"
+        echo "$remaining_vms"
+        sleep 5
+    fi
+done

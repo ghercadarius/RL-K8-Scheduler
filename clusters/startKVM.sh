@@ -1,5 +1,7 @@
 #!/bin/bash
 
+start_time=$(date +%s)
+
 ssh-add ~/.ssh/kvm-cloudinit-key
 echo "added the kvm ssh public key to ssh agent"
 
@@ -190,6 +192,9 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${WOR
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${WORKER2_IP} "sudo chmod +x /home/kubernetes/worker.sh && /home/kubernetes/worker.sh"
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${WORKER3_IP} "sudo chmod +x /home/kubernetes/worker.sh && /home/kubernetes/worker.sh"
 
+echo "deleted local kubeadm join script"
+rm ./kubeadm-join.sh
+
 while true; do
     sleep 5
     if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${WORKER1_IP} "sudo cat /home/kubernetes/finishconfig.txt" | grep -q "finished node configuration"; then
@@ -226,22 +231,28 @@ sudo tac /etc/hosts | sed "0,/\(.*\)k8s-node-master/s//${MASTER_IP} k8s-node-mas
 
 echo "Updated /etc/hosts with master IP ${MASTER_IP}"
 
+# kubectl get nodes
+echo "### testing to see if the nodes are ready ###"
+while true; do
+    sleep 5
+    output=$(kubectl get nodes --no-headers 2>&1)
+    # If kubectl returns an error, print it and continue to retry
+    if [[ $output == *"Unable to connect"* ]]; then
+        echo "kubectl error: $output"
+        continue
+    fi
+    total_nodes=$(echo "$output" | wc -l)
+    ready_nodes=$(echo "$output" | awk '{print $2}' | grep -w "Ready" | wc -l)
+    if [[ "$total_nodes" -gt 0 && "$total_nodes" -eq "$ready_nodes" ]]; then
+        echo "✅ all nodes are ready ✅"
+        echo "ready nodes: $total_nodes"
+        break
+    else
+        echo "!!! not all nodes are ready !!! (Total: $total_nodes, Ready: $ready_nodes)"
+    fi
+done
 
-
-
-# echo "10%"
-# sleep 35
-# echo "25%"
-# sleep 35
-# echo "40%"
-# sleep 35
-# echo "50%"
-# sleep 35
-# echo "60%"
-# sleep 35
-# echo "75%"
-# sleep 35
-# echo "90%"
-# sleep 35
-# echo "100%"
-echo "finished running the starting scripts in the vm's"
+echo "finished creating the cluster ✅"
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Cluster creation finished in ${elapsed} seconds"
