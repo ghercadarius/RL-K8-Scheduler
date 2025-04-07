@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "Building and running all resource blockers"
-docker-compose -p resourceblockers up --build -d
-echo "Pushing resource blockers to registry"
+echo "Building and running resource blocker"
+docker-compose -p resourceblocker up --build -d
+echo "Pushing resource blocker to registry"
 docker-compose push
 echo "Resource blockers are running"

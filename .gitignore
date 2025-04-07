@@ -4,3 +4,8 @@ clusters/worker1.qcow2
 clusters/worker2.qcow2
 clusters/worker3.qcow2
 clusters/ubuntu-base.qcow2
+containers/.idea/containers.iml
+containers/.idea/misc.xml
+containers/.idea/vcs.xml
+containers/.idea/inspectionProfiles/profiles_settings.xml
+containers/.idea/modules.xml

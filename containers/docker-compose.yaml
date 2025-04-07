@@ -1,37 +1,12 @@
 services:
-  cpuintensive:
-    build: ./cpuIntensive
-    image: localhost:5000/cpuintensive
-    container_name: cpuintensive
-    cpuset: "0,1,2,3"
+  resourceblocker:
+    build: ./resourceBlocker
+    image: ghercadarius/resourceblocker
+    container_name: resourceblocker
     ports:
-      - "127.0.0.1:5010:5010"
-    restart: always
-
-  ramintensive:
-    build: ./ramIntensive
-    image: localhost:5000/ramintensive
-    container_name: ramintensive
-    ports:
-      - "127.0.0.1:5011:5011"
-    restart: always
-
-  diskintensive:
-    build: ./diskIntensive
-    image: localhost:5000/diskintensive
-    container_name: diskintensive
-    ports:
-      - "127.0.0.1:5012:5012"
+      - "127.0.0.1:5000:5000"
     volumes:
       - disk_data:/data
-    restart: always
-
-  networkintensive:
-    build: ./networkIntensive
-    image: localhost:5000/networkintensive
-    container_name: networkintensive
-    ports:
-      - "127.0.0.1:5013:5013"
     restart: always
 
 volumes:
