@@ -1,0 +1,40 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    environment:
+      MYSQL_DATABASE: onlineshop
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 3306:3306
+    networks:
+      - onlineshop-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: onlineshop-api
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mysql;Database=onlineshop;User=user;Password=password;
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - onlineshop-network
+
+networks:
+  onlineshop-network:
+    driver: bridge
+  
