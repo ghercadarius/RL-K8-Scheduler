@@ -10,7 +10,7 @@ users:
     chpasswd: { expire: False }
     ssh_pwauth: True
     ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQg+bgKjO2udAxGhBDnHWdoo7c/U1jcQNELNr7Ofk2RhMI1Xfk/o6NPvniGCLGbjxliq0xqMHfMCP6Q5FL88ryfyY/LRJQtykOrcIPtdod3BFpGzN/SVI/H+ESgHfNr96KiJybX9yzUKZCiv/01DMPGgko0cx99Tl5npl7ZGKO7ZRZB87ejiRylqTQybnnpzB9Rw69huwcrO8mSZ6yMFRFXillmyzLSgm33VuJvJioOijz7Hxa0o/jyn6QdIc5xReyLHCCrOKKDTtc8QglQrHNGpWZOl3iLgcXOG5HLj84zDT022GOpS7yRQ/Jt9HLy9sY94xiE70bR4k5apvm/jz7RNm61eFyl4hhcrguv2bS5vHD2ee2E9zukDFbqBZGGuW4B1oPvX4PorHSxSPkoL2KsdlFwPEXelyth5N8aA+HQPp8r0WNo/Y0fJ4t+a2TwB9BJwWGoJ5US8fPNjmg6CoBZ8OiIJD/AGjBAXvpbLT+QczVDGCcaOWM32dOiQTf8JdNFhwrMxBV7SWlJxJFrGT2/L0LmmicbQastJ31UGGXJwislSCd0w/tm/iN3wXx19betXw2K7gkwlLvtWtlmbSdKowql3jIF9Qme9JE0HzJ3wYnzfdQR89q4W9pTzm3Fv1xJQQJntFe+CkVXACEf+jcRQHrR17uYKK0ta+EiM+4LQ== darius@darius-ROG-Flow-X13-GV301RC-GV301RC
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDM0cwFbSw+oKjom7TtA/3QZGWY3595SllAV2fQmCyuy+tgv802TPDcFAAqyg9eVZDVhB1HJYY1aHmbH+wTd7irDFLxc5WzjzUSN3VzJCSno6XQhc8BLzAQKz1U6I+785k9tZV/nEiV2JoqDcBIMK5MykZRESMQenvsj/sD2SM2O2K3KdvPElcV046InbduB+AbGdfbFd5h29Nmmrzn3bXZ53HbBckIwYEFkhfn6wWScifgAOJ0Pn+Li5O5uinGxmf+d6wn0pga8R79gXpOh51kDD5eOTLZHvavra5eTeubHvpr8hX4wFRfAWb0+wj0iVXRQgNVaXS+BQDsuBmD1fK3tRSauJ49vRIWDepdRKKUDCFOZ9nPKgjV5zZBuvKnIF8Q4P78EDxUZszpwswn+CaAtk31aAUEmT1CRQ50TDFu9qUxy9Kq5ng8pQmlBFPGF3CjOLYTFukHw1U21kVKEu7cYRAMGiV4Rt3GvMyxi2h0rWyVp/qar2MtS9TskMsFx0Z4S++vwFqCBd64D+wDwUUQkoN+KD+m+JS+NP0ouK1fJOiEguAYLMq5/Ec4U2o1aqXAkr7E39e5at+l9g4eM+Ziw1L+hMNHi9Bncau2bfUWfx4mkemxgFlTz1fw2RQvCBsiRd59cEMcy5bVgFElQrFIbGKChjMfrjPIeQe+RkoL6w== darius@darius-ROG-Flow-X13-GV301RC-GV301RC
 
 hostname: k8s-node-worker1
 preserve_hostname: false
@@ -36,6 +36,7 @@ packages:
   - containerd
 
 runcmd:
+  - apt install -y wireguard
   - systemctl enable --now qemu-guest-agent
   - dhclient -v ens3
   - apt update
@@ -46,6 +47,10 @@ runcmd:
   - apt install kubeadm kubelet kubectl -y
   - apt-mark hold kubeadm kubelet kubectl
   - kubeadm version
+  - mkdir -p /etc/wireguard
+  - wg genkey | tee /etc/wireguard/private.key | wg pubkey > /home/kubernetes/wg.pub
+  - chmod 600 /etc/wireguard/private.key
+  - chown kubernetes:kubernetes /etc/wireguard/wg.pub
   - echo "finished" > /home/kubernetes/finished.txt
   # - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
   # - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list

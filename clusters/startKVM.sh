@@ -1,14 +1,43 @@
 #!/bin/bash
-
+set -e
 start_time=$(date +%s)
+
+# config values
+
+declare -a HOST_LAN_IP=(
+    [host1]=$(hostname -I | awk '{print $1}')
+    [host2]=192.168.1.144
+    [host3]=192.168.1.145
+)
+
+declare -a HOST_WG_IP=(
+    [host1]=10.10.0.1
+    [host2]=10.10.0.2
+    [host3]=10.10.0.3
+)
+
+declare -a VM_WG_IP=(
+    [master]=10.10.0.10
+    [worker1]=10.10.0.11
+    [worker2]=10.10.0.12
+    [worker3]=10.10.0.13
+)
+
+# end for config values
 
 ssh-add ~/.ssh/kvm-cloudinit-key
 echo "added the kvm ssh public key to ssh agent"
 
+echo "Runinng the script with these remote hosts"
+HOST_2="darius@${HOST_LAN_IP[host2]}"
+HOST_3="darius@${HOST_LAN_IP[host3]}"
+echo "!!!!!!!!!!!!! HOST_2: $HOST_2 !!!!!!!!!!!!!"
+echo "!!!!!!!!!!!!! HOST_3: $HOST_3 !!!!!!!!!!!!!"
 
 echo "checking if base ubuntu image exists"
 IMAGE_URL="https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 IMAGE_FILE="ubuntu-base.qcow2"
+
 if [ ! -f $IMAGE_FILE ]; then
     echo "downloading the base ubuntu image"
     wget $IMAGE_URL -O $IMAGE_FILE
@@ -16,48 +45,61 @@ else
     echo "base ubuntu image already exists"
 fi
 
+mkdir -o wgpubs wgconfs wireguard-keys
 
-cp ubuntu-base.qcow2 master.qcow2
-qemu-img resize master.qcow2 20G
-echo "make master disk file"
-cp ubuntu-base.qcow2 worker1.qcow2
-qemu-img resize worker1.qcow2 20G
-echo "make worker1 disk files"
-cp ubuntu-base.qcow2 worker2.qcow2
-qemu-img resize worker2.qcow2 20G
-echo "make worker2 disk files"
-cp ubuntu-base.qcow2 worker3.qcow2
-qemu-img resize worker3.qcow2 20G
-echo "make worker3 disk files"
-
+for name in master worker1 worker2 worker3; do
+    cp $IMAGE_FILE "${name}.qcow2"
+    qemu-img resize "${name}.qcow2" 20G
+    echo "created ${name} disk file"
+done
 
 echo "creating the kvm master node"
 bash ./masterNode.sh
 echo "creating the kvm worker nodes"
-bash ./workerNodes.sh
-echo "created the kvms"
+bash ./workeNodeHost1.sh
+echo "created the k vms for host 1"
+
+echo "copying the disk files to the remote host 2"
+scp create_vm_remote_host2.sh "$HOST_2":~/create_vm_remote_host2.sh
+scp cloud-init-worker2.yaml "$HOST_2":~/cloud-init-worker2.yaml
+ssh "$HOST_2" "bash ~/create_vm_remote_host2.sh && rm ~/create_vm_remote_host2.sh ~/cloud-init-worker2.yaml"
+
+echo "copying the disk files to the remote host 3"
+scp create_vm_remote_host3.sh "$HOST_3":~/create_vm_remote_host3.sh
+scp cloud-init-worker3.yaml "$HOST_3":~/cloud-init-worker3.yaml
+ssh "$HOST_3" "bash ~/create_vm_remote_host3.sh && rm ~/create_vm_remote_host3.sh ~/cloud-init-worker3.yaml"
+
+echo "waiting for DHCP leases to be assigned"
+sleep 30
 
 echo "running the starting scripts in the vm's"
 sleep 30
 
-MASTER_IP=$(virsh net-dhcp-leases default | grep k8s-node-master | awk '{print $5}' | cut -d'/' -f1)
+MASTER_IP=$(virsh net-dhcp-leases default | grep k8s-node-master | awk '{print $5}' | cut -d/ -f1)
+WORKER1_IP=$(virsh net-dhcp-leases default | grep k8s-node-worker1 | awk '{print $5}' | cut -d/ -f1)
 
-if [[ -n "$MASTER_IP" ]]; then
-    echo "✅ Master Node IP: $MASTER_IP"
-    echo "Dar1us2oo3" | sudo -S sed -i '/k8s-node-master/d' /etc/hosts
-    echo "${MASTER_IP} k8s-node-master" | sudo tee -a /etc/hosts > /dev/null
-    echo "added the k8s-node-master entry to the hosts file"
-else
-    echo "❌ Error: Master Node IP not found!"
-fi
+read WORKER2_IP < <(ssh -o StrictHostKeyChecking=no $HOST_2 "virsh net-dhcp-leases default | grep k8s-node-worker2 | awk '{print \$5}' | cut -d/ -f1")
+read WORKER3_IP < <(ssh -o StrictHostKeyChecking=no $HOST_3 "virsh net-dhcp-leases default | grep k8s-node-worker3 | awk '{print \$5}' | cut -d/ -f1")
 
-# Get all worker IPs into an array
-readarray -t WORKER_IPS < <(virsh net-dhcp-leases default | grep k8s-node-worker | awk '{print $5}' | cut -d'/' -f1)
 
-# Assign each worker to its own variable
-WORKER1_IP=${WORKER_IPS[0]}
-WORKER2_IP=${WORKER_IPS[1]}
-WORKER3_IP=${WORKER_IPS[2]}
+# MASTER_IP=$(virsh net-dhcp-leases default | grep k8s-node-master | awk '{print $5}' | cut -d'/' -f1)
+
+# if [[ -n "$MASTER_IP" ]]; then
+#     echo "✅ Master Node IP: $MASTER_IP"
+#     echo "Dar1us2oo3" | sudo -S sed -i '/k8s-node-master/d' /etc/hosts
+#     echo "${MASTER_IP} k8s-node-master" | sudo tee -a /etc/hosts > /dev/null
+#     echo "added the k8s-node-master entry to the hosts file"
+# else
+#     echo "❌ Error: Master Node IP not found!"
+# fi
+
+# # Get all worker IPs into an array
+# readarray -t WORKER_IPS < <(virsh net-dhcp-leases default | grep k8s-node-worker | awk '{print $5}' | cut -d'/' -f1)
+
+# # Assign each worker to its own variable
+# WORKER1_IP=${WORKER_IPS[0]}
+# WORKER2_IP=${WORKER_IPS[1]}
+# WORKER3_IP=${WORKER_IPS[2]}s
 
 echo "🛠 Worker Node IPs:"
 echo "➡️  Worker 1: $WORKER1_IP"
@@ -80,13 +122,17 @@ while true; do
         echo "worker 1 not finished"
         continue
     fi
-    if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${WORKER2_IP} "sudo cat /home/kubernetes/finished.txt" | grep -q "finished"; then
+
+    host2_status=$(ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $HOST_2 "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${WORKER2_IP} 'sudo cat /home/kubernetes/finished.txt'")
+    if echo "$host2_status" | grep -q "finished"; then
         echo "worker 2 finished"
     else
         echo "worker 2 not finished"
         continue
     fi
-    if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${WORKER3_IP} "sudo cat /home/kubernetes/finished.txt" | grep -q "finished"; then
+
+    host3_status=$(ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $HOST_3 "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubernetes@${WORKER3_IP} 'sudo cat /home/kubernetes/finished.txt'")
+    if echo "$host3_status" | grep -q "finished"; then
         echo "worker 3 finished"
     else
         echo "worker 3 not finished"
@@ -96,6 +142,8 @@ while true; do
     break
 done
 echo "all nodes finished"
+
+echo "getting wg.pub from each vm"
 
 echo "copying util Files to master node"
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null utilFiles/containerd.conf kubernetes@${MASTER_IP}:/home/kubernetes
@@ -256,3 +304,17 @@ echo "finished creating the cluster ✅"
 end_time=$(date +%s)
 elapsed=$((end_time - start_time))
 echo "Cluster creation finished in ${elapsed} seconds"
+
+# echo "Starting prometheus server"
+# PROMETHEUS_TEMPLATE="prometheus/prometheus-template.yaml"
+# PROMETHEUS_CONFIG="prometheus/prometheus.yaml"
+
+# sed -e "s/NODE1_IP/$WORKER1_IP/" -e "s/NODE2_IP/$WORKER2_IP/" -e "s/NODE3_IP/$WORKER3_IP/" "$PROMETHEUS_TEMPLATE" > "$PROMETHEUS_CONFIG"
+
+# docker run -d --name prometheus-server -p 9090:9090 -v "$PWD/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml" --memory="1g" --cpus="1.0" prom/prometheus
+# echo "Prometheus server started at http://localhost:9090"
+# echo "Prometheus config file created at $PROMETHEUS_CONFIG"
+
+# echo "Running node exporter daemonset"
+# kubectl apply -f daemonSets/daemonset-node-exporter.yaml
+# echo "Node exporter daemonset created"

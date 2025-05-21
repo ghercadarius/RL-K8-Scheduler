@@ -1,7 +1,6 @@
 #!/bin/bash
 
 
-
 echo " deleting the kvm master node"
 
 virsh shutdown k8s-master
@@ -56,3 +55,11 @@ while true; do
         sleep 5
     fi
 done
+
+echo "deleting prometheus container"
+docker rm -f prometheus-server
+echo "deleted prometheus container"
+
+echo "deleting prometheus config file"
+rm -f /etc/prometheus/prometheus.yml
+echo "deleted prometheus config file"
