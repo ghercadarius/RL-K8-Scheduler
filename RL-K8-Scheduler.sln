@@ -1,0 +1,32 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OnlineStore", "OnlineStore", "{9AC64A65-EAA9-BCDB-E5D0-9AB00BF01B72}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backendService", "backendService", "{36C4538E-35B9-1E23-130A-D81325C7E26D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineShop", "OnlineStore\backendService\backend\OnlineShop.csproj", "{D1CE584C-1BB6-85A4-FCE8-9D57DFEDA7FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D1CE584C-1BB6-85A4-FCE8-9D57DFEDA7FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1CE584C-1BB6-85A4-FCE8-9D57DFEDA7FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1CE584C-1BB6-85A4-FCE8-9D57DFEDA7FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1CE584C-1BB6-85A4-FCE8-9D57DFEDA7FD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{36C4538E-35B9-1E23-130A-D81325C7E26D} = {9AC64A65-EAA9-BCDB-E5D0-9AB00BF01B72}
+		{D1CE584C-1BB6-85A4-FCE8-9D57DFEDA7FD} = {36C4538E-35B9-1E23-130A-D81325C7E26D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E43BE215-F0FE-489D-B018-4A03A2094D43}
+	EndGlobalSection
+EndGlobal
