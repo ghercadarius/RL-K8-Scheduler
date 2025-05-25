@@ -1,12 +1,7 @@
 #!/bin/bash
 
-declare -A HOST_LAN_IP=(
-    [host2]=192.168.1.144
-    [host3]=192.168.1.145
-)
-
-HOST_2="darius@${HOST_LAN_IP[host2]}"
-HOST_3="darius@${HOST_LAN_IP[host3]}"
+HOST_1=$(ip -4 addr show wlp6s0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+HOST_2="192.168.1.145"
 
 echo " deleting the kvm master node"
 
@@ -15,8 +10,14 @@ virsh undefine k8s-master
 
 echo " deleting the kvm worker nodes"
 
-virsh shutdown k8s-worker1
-virsh undefine k8s-worker1
+sshpass -p 'Dar1us2oo3' ssh "darius@$HOST_2" "echo 'Dar1us2oo3' | sudo -S virsh shutdown k8s-worker"
+sshpass -p 'Dar1us2oo3' ssh "darius@$HOST_2" "echo 'Dar1us2oo3' | sudo -S virsh undefine k8s-worker"
+
+rm -f ./master.qcow2
+sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sudo -S rm -f ./worker.qcow2"
+
+echo "!!!!!! deleted the kvm worker nodes"
+sleep 1000
 
 sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sudo -S virsh shutdown k8s-worker2" || true
 sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sudo -S virsh undefine k8s-worker2" || true

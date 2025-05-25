@@ -9,22 +9,32 @@ users:
     chpasswd: { expire: False }
     ssh_pwauth: True
     ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDM0cwFbSw+oKjom7TtA/3QZGWY3595SllAV2fQmCyuy+tgv802TPDcFAAqyg9eVZDVhB1HJYY1aHmbH+wTd7irDFLxc5WzjzUSN3VzJCSno6XQhc8BLzAQKz1U6I+785k9tZV/nEiV2JoqDcBIMK5MykZRESMQenvsj/sD2SM2O2K3KdvPElcV046InbduB+AbGdfbFd5h29Nmmrzn3bXZ53HbBckIwYEFkhfn6wWScifgAOJ0Pn+Li5O5uinGxmf+d6wn0pga8R79gXpOh51kDD5eOTLZHvavra5eTeubHvpr8hX4wFRfAWb0+wj0iVXRQgNVaXS+BQDsuBmD1fK3tRSauJ49vRIWDepdRKKUDCFOZ9nPKgjV5zZBuvKnIF8Q4P78EDxUZszpwswn+CaAtk31aAUEmT1CRQ50TDFu9qUxy9Kq5ng8pQmlBFPGF3CjOLYTFukHw1U21kVKEu7cYRAMGiV4Rt3GvMyxi2h0rWyVp/qar2MtS9TskMsFx0Z4S++vwFqCBd64D+wDwUUQkoN+KD+m+JS+NP0ouK1fJOiEguAYLMq5/Ec4U2o1aqXAkr7E39e5at+l9g4eM+Ziw1L+hMNHi9Bncau2bfUWfx4mkemxgFlTz1fw2RQvCBsiRd59cEMcy5bVgFElQrFIbGKChjMfrjPIeQe+RkoL6w== darius@darius-ROG-Flow-X13-GV301RC-GV301RC
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDC+TIRddJ+aN5p4H8maa4aKCdsJRMGEtggzsHSOPKBWnwkbMhw4jawphyj/aNDPG5mW3I6hA1g6DmccscYILlza3fuY/evkdkp04MpQ/4W1mv64cUjhHdE6ofDrIt9suMEAXUPfCosmDL84NckF4iaWMbyDV/75sPxDSQmm1zExAj0oUfROTzOjd+7bo1DhhvrYoB9c+TbS54hwui6PHfHezKaJvvHPmM7rIxtOoC7BdS7JfxBVg9Ahcds5nPNQHcm6ZcY++/KilydQ4VaT5Gr4BNk8QGdvvu51Uk5fgzLGd7izGcGW2n7PxarccYsZNqdW/hwyvjFbjj1kuZYHMtoobaYq2Cn+0rM6p/zkmemvuFCzPlL+jNDeuMGfzjhfP7oWw+VhogQNVS9R707e60Kgo4rWzyusTuvlmEWyicD7wfwolROTt5Z4qoIbq+oaQixo6CK9qWScJ6159QR3Rk2f1j6KmAde3k/d7un/VPJCQY39qzOpvZrAg471UglcOAWAPYsfi4LcoOPUPBv/nJnA0kPpdnOSX9E329qIN6TX0sHGXBCTELmv/4CT0HQIFodxUyJG+qLIUmRa/IsgRmcrirP4p1t1nuVRDtTgFoyqU8Zu5raEyBfRpgAMUlpatzOL/T+EAL/mSlm1HN+279WUvjTx5i/sz1IC8TUwL/c8w== darius@darius-ROG-Flow-X13-GV301RC-GV301RC
 
 hostname: k8s-node-master
 preserve_hostname: false
 
 network:
   version: 2
+  renderer: networkd
   ethernets:
-    ens3:
+    cluster0:
+      match:
+        macaddress: "52:54:00:b0:be:7d"
+      set-name: eth-cluster
       dhcp4: false
       addresses:
         - 172.16.100.3/29
+      gateway4: 172.16.100.1
       nameservers:
         addresses:
           - 8.8.8.8
           - 8.8.4.4
+    mgmt0:
+      match:
+        macaddress: "52:54:00:51:e6:d6"
+      set-name: eth-mgmt
+      dhcp4: true
 
 packages:
   - qemu-guest-agent
@@ -33,7 +43,9 @@ packages:
   - ca-certificates
 
 runcmd:
-  - apt install -y wireguard
+  - sed -i 's/GRUB_CMDLINE_LINUX="/GRUB_CMDLINE_LINUX="console=ttyS0,115200 console=tty1 /' /etc/default/grub
+  - update-grub
+  - systemctl enable --now serial-getty@ttyS0.service
   - systemctl enable --now qemu-guest-agent
   - dhclient -v ens3
   - apt update
@@ -44,10 +56,6 @@ runcmd:
   - apt install kubeadm kubelet kubectl -y
   - apt-mark hold kubeadm kubelet kubectl
   - kubeadm version
-  - mkdir -p /etc/wireguard
-  - wg genkey | tee /etc/wireguard/private.key | wg pubkey > /home/kubernetes/wg.pub
-  - chmod 600 /etc/wireguard/private.key
-  - chown kubernetes:kubernetes /etc/wireguard/wg.pub
   - echo "finished" > /home/kubernetes/finished.txt
   # - apt install docker.io
   # - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg

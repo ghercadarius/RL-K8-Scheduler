@@ -26,8 +26,7 @@ else
     echo "base ubuntu image already exists"
 fi
 
-cp $IMAGE_FILE "master.qcow2"
-qemu-img resize "master.qcow2" 20G
+qemu-img create -f qcow2 -F qcow2 -b ubuntu-base.qcow2 master.qcow2 20G
 echo "created master disk file"
 
 echo "creating the kvm master node"

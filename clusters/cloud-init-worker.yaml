@@ -25,6 +25,8 @@ network:
         addresses:
           - 8.8.8.8
           - 8.8.4.4
+    ens4:
+      dhcp4: true
 
 packages:
   - qemu-guest-agent

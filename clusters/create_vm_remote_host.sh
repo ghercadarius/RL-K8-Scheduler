@@ -18,8 +18,7 @@ fi
 
 # === Create VM disk from base image ===
 echo "💽 Creating VM disk for k8s-worker..."
-cp "$BASE_IMAGE" "$VM_DISK"
-qemu-img resize "$VM_DISK" 20G
+qemu-img create -f qcow2 -F qcow2 -b $BASE_IMAGE ./worker.qcow2 20G
 
 # === Verify cloud-init file exists ===
 if [ ! -f "$CLOUD_INIT_YAML" ]; then
@@ -29,6 +28,6 @@ fi
 
 # === Launch VM ===
 echo "🚀 Launching VM k8s-worker..."
-virt-install --name k8s-worker --memory 4096 --vcpus 4 --disk path=./worker.qcow2,format=qcow2,size=1 --os-variant ubuntu22.04 --import --network network=default,model=virtio --network bridge=br0,model=virtio --cloud-init user-data=cloud-init-worker.yaml --noautoconsole
+virt-install --name k8s-worker --memory 4096 --vcpus 4 --disk path=./worker.qcow2,format=qcow2,size=1 --os-variant ubuntu22.04 --import --network bridge=br0 --network network=default --cloud-init user-data=cloud-init-worker.yaml --noautoconsole
 
 echo "✅ VM k8s-worker launched successfully"
