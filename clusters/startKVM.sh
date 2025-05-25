@@ -216,15 +216,15 @@ elapsed=$((end_time - start_time))
 echo "Cluster creation finished in ${elapsed} seconds"
 
 echo "Starting prometheus server"
-PROMETHEUS_TEMPLATE="prometheus/prometheus-template.yaml"
-PROMETHEUS_CONFIG="prometheus/prometheus.yaml"
+PROMETHEUS_TEMPLATE="prometheus/prometheus-template.yml"
+PROMETHEUS_CONFIG="prometheus/prometheus.yml"
 
 sed -e "s/NODE_IP/$WORKER_IP/" "$PROMETHEUS_TEMPLATE" > "$PROMETHEUS_CONFIG"
 
-docker run -d --name prometheus-server -p 9090:9090 -v "$PWD/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml" --memory="1g" --cpus="1.0" prom/prometheus
+docker run -d --name prometheus-server -p 9090:9090 -v "$PWD/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml" --memory="1g" --cpus="1.0" prom/prometheus
 echo "Prometheus server started at http://localhost:9090"
 echo "Prometheus config file created at $PROMETHEUS_CONFIG"
 
-# echo "Running node exporter daemonset"
-# kubectl apply -f daemonSets/daemonset-node-exporter.yaml
-# echo "Node exporter daemonset created"
+echo "Running node exporter daemonset"
+kubectl apply -f daemonSets/daemonset-node-exporter.yaml
+echo "Node exporter daemonset created"
