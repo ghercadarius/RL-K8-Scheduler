@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MY_IP=$(hostname -I | awk '{print $1}')
+MY_IP="MASTER_IP_PLACEHOLDER"
 
 # Save master IP to a file
 echo "$MY_IP" | sudo tee /home/kubernetes/master-ip.txt
@@ -27,7 +27,7 @@ sudo cp /home/kubernetes/10-kubeadm.conf /usr/lib/systemd/system/kubelet.service
 
 sudo systemctl daemon-reload && sudo systemctl restart kubelet
 
-sudo kubeadm init  --apiserver-advertise-address=$MY_IP --control-plane-endpoint=k8s-node-master --pod-network-cidr=192.168.0.0/16 --upload-certs
+sudo kubeadm init  --apiserver-advertise-address=$MY_IP --control-plane-endpoint=${MY_IP}:6443 --pod-network-cidr=192.168.0.0/16 --upload-certs
 
 mkdir -p $HOME/.kube
 

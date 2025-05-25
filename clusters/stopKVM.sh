@@ -17,13 +17,6 @@ rm -f ./master.qcow2
 sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sudo -S rm -f ./worker.qcow2"
 
 echo "!!!!!! deleted the kvm worker nodes"
-sleep 1000
-
-sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sudo -S virsh shutdown k8s-worker2" || true
-sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sudo -S virsh undefine k8s-worker2" || true
-
-sshpass -p 'Dar1us2oo3' ssh "$HOST_3" "echo 'Dar1us2oo3' | sudo -S virsh shutdown k8s-worker3" || true
-sshpass -p 'Dar1us2oo3' ssh "$HOST_3" "echo 'Dar1us2oo3' | sudo -S virsh undefine k8s-worker3" || true
 
 
 echo "deleting the k8s-node-master entry from the hosts file"
@@ -32,25 +25,20 @@ echo "Dar1us2oo3" | sudo -S sed -i '/k8s-node-master/d' /etc/hosts
 echo "deleting the default network to flush DHCP leases"
 virsh net-destroy default
 sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "virsh net-destroy default" || true
-sshpass -p 'Dar1us2oo3' ssh "$HOST_3" "virsh net-destroy default" || true
 
 echo "Dar1us2oo3" | sudo pkill -f "dnsmasq.*default"
 sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sudo -S pkill -f 'dnsmasq.*default'" || true
-sshpass -p 'Dar1us2oo3' ssh "$HOST_3" "echo 'Dar1us2oo3' | sudo -S pkill -f 'dnsmasq.*default'" || true
 
 
 echo "Dar1us2oo3" | sudo -S rm -f /var/lib/libvirt/dnsmasq/default.leases
 sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sudo -S rm -f /var/lib/libvirt/dnsmasq/default.leases" || true
-sshpass -p 'Dar1us2oo3' ssh "$HOST_3" "echo 'Dar1us2oo3' | sudo -S rm -f /var/lib/libvirt/dnsmasq/default.leases" || true
 
 echo "restarting the libvirtd service"
 
 virsh net-start default
 sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sydi -S virsh net-start default" || true
-sshpass -p 'Dar1us2oo3' ssh "$HOST_3" "echo 'Dar1us2oo3' | sudo -S virsh net-start default" || true
 
 sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "echo 'Dar1us2oo3' | sudo -S systemctl restart libvirtd" || true
-sshpass -p 'Dar1us2oo3' ssh "$HOST_3" "echo 'Dar1us2oo3' | sudo -S systemctl restart libvirtd" || true
 
 echo "Dar1us2oo3" | sudo -S systemctl restart libvirtd
 echo "successfully restarted the libvirtd service and started the default network" 
@@ -59,7 +47,6 @@ echo "successfully restarted the libvirtd service and started the default networ
 rm -f ./master.qcow2 ./worker1.qcow2
 
 sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "rm -f ./worker2.qcow2"
-sshpass -p 'Dar1us2oo3' ssh "$HOST_3" "rm -f ./worker3.qcow2"
 
 echo "deleted the disk files"
 
@@ -81,18 +68,6 @@ done
 
 while true; do
     remaining_vm=$(sshpass -p 'Dar1us2oo3' ssh "$HOST_2" "virsh list --all" | awk 'NR>2 {print $2}' | grep -E "^k8s-")
-    if [ -z "$remaining_vm" ]; then
-        echo "All VMs have been removed from the host."
-        break
-    else
-        echo "Waiting for the following VMs to be removed:"
-        echo "$remaining_vm"
-        sleep 5
-    fi
-done
-
-while true; do
-    remaining_vm=$(sshpass -p 'Dar1us2oo3' ssh "$HOST_3" "virsh list --all" | awk 'NR>2 {print $2}' | grep -E "^k8s-")
     if [ -z "$remaining_vm" ]; then
         echo "All VMs have been removed from the host."
         break
