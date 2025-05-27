@@ -83,5 +83,5 @@ docker rm -f prometheus-server
 echo "deleted prometheus container"
 
 echo "deleting prometheus config file"
-rm -f /etc/prometheus/prometheus.yml
+rm -f prometheus/prometheus.yml
 echo "deleted prometheus config file"

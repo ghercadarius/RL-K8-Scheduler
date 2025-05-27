@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-blocker
+  labels:
+    app: resource-blocker
+spec:
+  selector:
+    matchLabels:
+      app: resource-blocker
+  template:
+    metadata:
+      labels:
+        app: resource-blocker
+    spec:
+      containers:
+        - name: resource-blocker
+          image: ghercadarius/resourceblocker:latest
+          ports:
+            - containerPort: 5000

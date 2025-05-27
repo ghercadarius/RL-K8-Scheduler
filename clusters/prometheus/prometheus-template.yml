@@ -5,4 +5,4 @@ scrape_configs:
   - job_name: "node-exporters"
     static_configs:
       - targets:
-          - "NODE1_IP:9100"
+          - "NODE_IP:9100"

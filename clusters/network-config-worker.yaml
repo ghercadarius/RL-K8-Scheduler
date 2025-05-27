@@ -5,16 +5,10 @@ ethernets:
     dhcp4: false
     addresses: [172.16.100.4/29]
     gateway4: 172.16.100.1
-    nameservers:
-      addresses: [8.8.8.8,8.8.4.4]
     optional: false
   enp2s0:
     dhcp4: true
     gateway4: 192.168.122.1
-    nameservers:
-      addresses:
-        - 8.8.8.8
-        - 8.8.4.4
     link-local: []
     optional: false
     

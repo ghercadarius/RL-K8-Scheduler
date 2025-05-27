@@ -32,4 +32,5 @@ runcmd:
   - apt install kubeadm kubelet kubectl -y
   - apt-mark hold kubeadm kubelet kubectl
   - kubeadm version
+  - ip route add 10.96.0.0/12 via 172.16.100.3
   - echo "finished" > /home/kubernetes/finished.txt

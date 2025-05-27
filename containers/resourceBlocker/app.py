@@ -29,9 +29,9 @@ class DISK:
     def __init__(self):
         self.write_speed_mbps = 10
         self.read_speed_mbps = 10
-        self.data_file = "/data/datafile.txt"
+        self.data_file = "/tmp/datafile.txt"
         self.mb_size = 1024 * 1024
-        os.makedirs("/data", exist_ok=True)
+        os.makedirs("/tmp", exist_ok=True)
 
     def write_sample_data(self, size_mb):
         with open(self.data_file, "wb") as f:
@@ -50,7 +50,7 @@ class DISK:
                 time.sleep(sleep_t)
 
     def write_thread(self):
-        with open('/data/writefile.txt', "wb") as f:
+        with open('/tmp/writefile.txt', "wb") as f:
             start_t = time.time()
             while True:
                 f.write(os.urandom(self.mb_size * 100))
@@ -338,6 +338,7 @@ def get_data():
     """
     return jsonify({"data": dataset[:10]})
 
+@app.route('/healthz')
+def healthz():
+    return 'OK', 200
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
