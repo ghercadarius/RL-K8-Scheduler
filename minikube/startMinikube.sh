@@ -96,3 +96,5 @@ setup_vm_ip_systemd "${MINIKUBE_PROFILE}" "${STATIC_IP}"
 
 echo "✅ Single-node Minikube cluster ready with bridge NIC:"
 echo "   Node: ${STATIC_IP} (CPUs: $CPUS, RAM: $RAM MB)"
+echo "Fixing network connectivity for Minikube VM..."
+minikube ssh --profile=${MINIKUBE_PROFILE} --node=${MINIKUBE_PROFILE} "sudo ip route del default via 172.16.100.1 dev eth2"
