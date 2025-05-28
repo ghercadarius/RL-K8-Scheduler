@@ -2,6 +2,8 @@
 
 MY_IP="MASTER_IP_PLACEHOLDER"
 
+echo "$MY_IP  k8s-node-master" | sudo tee -a /etc/hosts
+
 # Save master IP to a file
 echo "$MY_IP" | sudo tee /home/kubernetes/master-ip.txt
 sudo chown kubernetes:kubernetes /home/kubernetes/master-ip.txt
@@ -35,7 +37,7 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+kubectl apply -f /home/kubernetes/calico.yaml
 
 kubectl taint nodes --all node-role.kubernetes.io/control-plane-
 

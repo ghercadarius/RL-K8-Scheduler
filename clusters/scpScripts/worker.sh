@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "172.16.100.3  k8s-node-master" | sudo tee -a /etc/hosts
+
 sudo cp /home/kubernetes/containerd.conf /etc/modules-load.d/containerd.conf
 
 sudo modprobe overlay

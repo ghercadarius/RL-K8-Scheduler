@@ -1,0 +1,39 @@
+#cloud-config
+
+users:
+  - default
+  - name: kubernetes
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    shell: /bin/bash
+    passwd: $6$rounds=4096$ZMReQfwhYfCWjz01$qdcmo5KGuMBWEzA.uSWnOI9NYC0nKpPvGQuWpeEvOVydAs5YFZDoPRXJ8vJCSGHyys4Ji6pCEJ.QwnHO0OJod0
+    lock_passwd: Optional
+    chpasswd: { expire: False }
+    ssh_pwauth: True
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDGyAtSwNJI+mCUr9H3ROr2ZrVRykifR3zAjnbYOjUW7bjsCMigxV4RLQHj2vhTdLw6j+LrEbjqx2Qb1DhySGdr+JifC2SYX5OZu7+pQWWQM1RSw4QTfswa5DwbNejgCGO5BftcfA8AXBx7we+KzqBPFASQeomxCkr13+50fc4eCkD0Ci4F9K58lkTWocaU2AIow8D0Juh6uYKlWHte+03HdkwXEttS36Z7OtDK4pzlTMPixSiPts/X7YDvM1CZEu7Y1zgOx1vRxoLlT1ICs9d4i3wgmeufQjfljKz/L0x5rw5rK5G6NQl81wAz0nCVKMw/EsW2yn0gEsCGFC0Ra8oaF6ltnwyZTy2wOCAWPWDbz0mnRKiJmVTW9M/cJo7w6S3G2QZs1mnWnkv/75qhb1EFGhDgGzvDyF1/Lf4GvvKOCKPvpIxtZn5QFmmSgvNfZvjxEL5W67/KUkD6Bl6n9QP8s4rS5BjMG3MQI/nVpaWWfMaPz0KT/P8cd//lUt7GSPKNEXFqBOSKBx9HyQJLmaQQZxYWggujEAuXZ/qLiPDvc4XYvFqJOzjv6fObLXLSidjvihIS9j5X6h0RdyYGZlKSV0FJq2RIkUJqf1+MMO5sO4HxRBAjw6h6y8hez5J9ubO+B7XEK1KOvcR7QBOINvZoT1YKWgRri9x2pMk7Mblerw== darius@thinkpad
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDC+TIRddJ+aN5p4H8maa4aKCdsJRMGEtggzsHSOPKBWnwkbMhw4jawphyj/aNDPG5mW3I6hA1g6DmccscYILlza3fuY/evkdkp04MpQ/4W1mv64cUjhHdE6ofDrIt9suMEAXUPfCosmDL84NckF4iaWMbyDV/75sPxDSQmm1zExAj0oUfROTzOjd+7bo1DhhvrYoB9c+TbS54hwui6PHfHezKaJvvHPmM7rIxtOoC7BdS7JfxBVg9Ahcds5nPNQHcm6ZcY++/KilydQ4VaT5Gr4BNk8QGdvvu51Uk5fgzLGd7izGcGW2n7PxarccYsZNqdW/hwyvjFbjj1kuZYHMtoobaYq2Cn+0rM6p/zkmemvuFCzPlL+jNDeuMGfzjhfP7oWw+VhogQNVS9R707e60Kgo4rWzyusTuvlmEWyicD7wfwolROTt5Z4qoIbq+oaQixo6CK9qWScJ6159QR3Rk2f1j6KmAde3k/d7un/VPJCQY39qzOpvZrAg471UglcOAWAPYsfi4LcoOPUPBv/nJnA0kPpdnOSX9E329qIN6TX0sHGXBCTELmv/4CT0HQIFodxUyJG+qLIUmRa/IsgRmcrirP4p1t1nuVRDtTgFoyqU8Zu5raEyBfRpgAMUlpatzOL/T+EAL/mSlm1HN+279WUvjTx5i/sz1IC8TUwL/c8w== darius@darius-ROG-Flow-X13-GV301RC-GV301RC
+
+hostname: k8s-node-worker
+preserve_hostname: false
+
+
+packages:
+  - qemu-guest-agent
+  - curl
+  - apt-transport-https
+  - ca-certificates
+  - containerd
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+  - dhclient -v ens3
+  - apt update
+  - apt install docker.io -y
+  - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  - apt update
+  - apt install kubeadm kubelet kubectl -y
+  - apt-mark hold kubeadm kubelet kubectl
+  - kubeadm version
+  - ip route add 10.96.0.0/12 via 172.16.100.3
+  - echo "finished" > /home/kubernetes/finished.txt
