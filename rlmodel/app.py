@@ -8,6 +8,7 @@ class App:
         self.service_path = service_path
 
     def runApp(self):
+        print("Running application...")
         deployCommand = f"""kubectl apply -f {self.deployment_path}"""
         serviceCommand = f"""kubectl apply -f {self.service_path}"""
         try:
@@ -22,6 +23,7 @@ class App:
             print(f"Error applying deployment: {e}")
 
     def deleteApp(self):
+        print("Deleting application...")
         deleteAppCommand = f"""kubectl delete -f {self.deployment_path}"""
         deleteServiceCommand = f"""kubectl delete -f {self.service_path}"""
         try:
@@ -36,6 +38,7 @@ class App:
             print(f"Error deleting deployment: {e}")
 
     def getAppStatus(self):
+        print("Checking application status...")
         health_check_endpoint = f"http://172.16.100.3:30085/test" # check to see if the app is up
         while True:
             try:

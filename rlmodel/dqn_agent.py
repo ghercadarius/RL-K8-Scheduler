@@ -102,3 +102,13 @@ class DQNAgent:
         if self.steps_done % self.target_update_freq == 0:
             self.target_net.load_state_dict(self.policy_net.state_dict())
 
+    def save(self, path: str):
+        """Save the policy network to a file."""
+        torch.save(self.policy_net.state_dict(), path)
+
+    def load(self, path: str):
+        """Load the policy network from a file."""
+        self.policy_net.load_state_dict(torch.load(path, map_location=self.device))
+        self.policy_net.eval()
+        self.target_net.load_state_dict(self.policy_net.state_dict())
+

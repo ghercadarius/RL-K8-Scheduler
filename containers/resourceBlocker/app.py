@@ -64,6 +64,8 @@ class DISK:
                 sleep_t = max(0, int((self.mb_size / (self.write_speed_mbps * self.mb_size)) - cur_t))
                 time.sleep(sleep_t)
 
+import socket
+
 class NETWORK:
     def __init__(self):
         self.network_speed_mpbs = 10
@@ -131,11 +133,14 @@ def compute():
     data = request.json
     n = int(data.get('input', 10))
     blocked_cores_fact = int(data.get('blocked_factor', 50)) / 100
-    print("Blocking cores factor {} and nr of cores is {}".format(blocked_cores_fact, int(cpuBlocker.num_cores * blocked_cores_fact)), file=sys.stderr)
     allowed_cores = list(range(int(cpuBlocker.num_cores * blocked_cores_fact)))
-    psutil.Process().cpu_affinity(allowed_cores)
-    result = cpuBlocker.fibonacci(n)
-    return jsonify({"result": result})
+
+    def cpu_task():
+        psutil.Process().cpu_affinity(allowed_cores)
+        cpuBlocker.fibonacci(n)
+
+    threading.Thread(target=cpu_task, daemon=True).start()
+    return jsonify({"status": "started"}), 200
 
 @app.route('/read', methods=['POST'])
 def read():
@@ -168,9 +173,8 @@ def read():
               example: reading
     """
     diskBlocker.read_speed_mbps = int(request.json.get('read_speed_mbps', 10))
-    read_call = threading.Thread(target = diskBlocker.read_thread, daemon=True)
-    read_call.start()
-    return jsonify({"status": "reading"})
+    threading.Thread(target=diskBlocker.read_thread, daemon=True).start()
+    return jsonify({"status": "reading"}), 200
 
 @app.route('/write', methods=['POST'])
 def write():
@@ -203,9 +207,8 @@ def write():
               example: writing
     """
     diskBlocker.write_speed_mbps = int(request.json.get('write_speed_mbps', 10))
-    write_call = threading.Thread(target=diskBlocker.write_thread, daemon=True)
-    write_call.start()
-    return jsonify({"status": "writing"})
+    threading.Thread(target=diskBlocker.write_thread, daemon=True).start()
+    return jsonify({"status": "writing"}), 200
 
 @app.route('/readwrite', methods=['POST'])
 def readwrite():
@@ -244,11 +247,9 @@ def readwrite():
     """
     diskBlocker.read_speed_mbps = int(request.json.get('read_speed_mbps', 10))
     diskBlocker.write_speed_mbps = int(request.json.get('write_speed_mbps', 10))
-    read_call = threading.Thread(target=diskBlocker.read_thread, daemon=True)
-    write_call = threading.Thread(target=diskBlocker.write_thread, daemon=True)
-    read_call.start()
-    write_call.start()
-    return jsonify({"status": "reading and writing"})
+    threading.Thread(target=diskBlocker.read_thread, daemon=True).start()
+    threading.Thread(target=diskBlocker.write_thread, daemon=True).start()
+    return jsonify({"status": "reading and writing"}), 200
 
 @app.route('/stream')
 def stream():
@@ -275,8 +276,6 @@ def stream():
     """
     networkBlocker.network_speed_mpbs = int(request.args.get('network_speed_mbps', 10))
     return Response(networkBlocker.generate_data(), mimetype="application/octet-stream")
-
-
 @app.route('/load', methods=['POST'])
 def load():
     """
@@ -311,11 +310,13 @@ def load():
               example: 100
     """
     size_mb = int(request.json.get('size_mb', 100))
-    print("Loading data of size {} MB".format(size_mb), file=sys.stderr)
-    mb_factor = 1024 * 1024 // 40
-    memoryBlocker.dataset = [random.random() for _ in range(size_mb * mb_factor)]
-    return jsonify({"status": "loaded", "size_mb": size_mb})
 
+    def load_task():
+        mb_factor = 1024 * 1024 // 40
+        memoryBlocker.dataset = [random.random() for _ in range(size_mb * mb_factor)]
+
+    threading.Thread(target=load_task, daemon=True).start()
+    return jsonify({"status": "loading", "size_mb": size_mb}), 200
 
 @app.route('/data', methods=['GET'])
 def get_data():

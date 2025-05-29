@@ -16,11 +16,11 @@ class Node:
             self.network_bandwidth = metrics['network_bandwidth'] # in mbps
             self.power_usage = 0 # in joules, are calculated when creating the agent state
         else:
-            self.cpu = random.uniform(0,1)
-            self.ram = random.uniform(0, 4096)
-            self.disk_read = random.uniform(0, 50)
-            self.disk_write = random.uniform(0, 50)
-            self.network_bandwidth = random.uniform(0, 100)
+            self.cpu = random.uniform(0,1) # it represents the free cpu percentage
+            self.ram = int(random.uniform(0, 12288))
+            self.disk_read = int(random.uniform(0, 500))
+            self.disk_write = int(random.uniform(0, 500))
+            self.network_bandwidth = int(random.uniform(0, 100))
             self.power_usage = 0.0
 
     def update_sim_metrics(self, metrics: dict):
@@ -75,3 +75,22 @@ class Node:
         :return: list of metrics in fixed order
         """
         return [self.real_metrics['cpu'], self.real_metrics['ram'], self.real_metrics['disk_read'], self.real_metrics['disk_write'], self.real_metrics['network_bandwidth'], self.real_metrics['power_usage']]
+
+    def is_valid(self) -> bool:
+        """
+        Check if the node is valid (not None).
+        :return: True if the node is valid, False otherwise
+        """
+        if self.cpu > 0.95 or self.ram > 12000 or self.disk_read > 470  or self.disk_write > 470 or self.network_bandwidth > 90:
+            return False
+        return True
+
+    def is_done(self) -> bool:
+        """
+        Check if the node is done (not valid).
+        :return: True if the node is done, False otherwise
+        """
+        if self.real_metrics['cpu'] > 95 or self.real_metrics['ram'] > 11500 or self.real_metrics['disk_read'] > 450 \
+                or self.real_metrics['disk_write'] > 450 or self.real_metrics['network_bandwidth'] > 90:
+            return True
+        return False

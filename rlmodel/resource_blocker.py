@@ -1,4 +1,5 @@
 import subprocess
+import threading
 import time
 
 import requests
@@ -18,10 +19,11 @@ class ResourceBlocker:
 
 
     def block_cpu(self, percentage: float):
+        print("Blocking CPU...")
         # send a post request to the API to block CPU usage
         url = f"http://{self.rb_ip}/cpu"
         json_data = {
-            "blocked_factor": percentage,
+            "blocked_factor": int(100 * percentage),
             "input": 50
         }
         try:
@@ -32,6 +34,7 @@ class ResourceBlocker:
             print(f"Error blocking CPU: {e}")
 
     def block_ram(self, value: float):
+        print("Blocking RAM...")
         url = f"http://{self.rb_ip}/load"
         json_data = {
             "size_mb": value
@@ -45,6 +48,7 @@ class ResourceBlocker:
 
 
     def block_disk_readwrite(self, read: float, write: float):
+        print("Blocking Disk Read/Write...")
         url = f"http://{self.rb_ip}/readwrite"
         json_data = {
             "read_speed_mbps": read,
@@ -58,6 +62,7 @@ class ResourceBlocker:
             print(f"Error blocking disk read/write: {e}")
 
     def block_disk_read(self, read: float):
+        print("Blocking Disk Read...")
         url = f"http://{self.rb_ip}/read"
         json_data = {
             "read_speed_mbps": read
@@ -70,6 +75,7 @@ class ResourceBlocker:
             print(f"Error blocking disk read: {e}")
 
     def block_disk_write(self, write: float):
+        print("Blocking Disk Write...")
         url = f"http://{self.rb_ip}/write"
         json_data = {
             "write_speed_mbps": write
@@ -82,16 +88,34 @@ class ResourceBlocker:
             print(f"Error blocking disk write: {e}")
 
     def block_network(self, value: float):
+        print("Blocking Network...")
         url = f"http://{self.rb_ip}/stream?network_speed_mbps={value}"
-        try:
-            response = requests.post(url)
-            response.raise_for_status()  # Raise an error for bad responses
-            print(f"Network blocking response: {response.json()}")
-        except requests.RequestException as e:
-            print(f"Error blocking network: {e}")
+
+        def network_request():
+            try:
+                # Stream=True to avoid loading all data into memory, timeout=None for indefinite wait
+                response = requests.get(url, stream=True, timeout=None)
+                # Do not process the response, just keep the connection open
+                for _ in response.iter_content(chunk_size=1024):
+                    pass  # Keep the connection alive
+            except requests.RequestException as e:
+                print(f"Error blocking network: {e}")
+
+        thread = threading.Thread(target=network_request, daemon=True)
+        thread.start()
+        # check if the thread is alive for 3 seconds
+        for _ in range(3):
+            if thread.is_alive():
+                print("Network blocking is active.")
+                time.sleep(1)
+            else:
+                print("Network blocking failed to start. Retrying...")
+                self.block_network(value)  # Retry blocking network
+                break
 
     @staticmethod
     def reset_resource_blocker():
+        print("Resetting resource blocker...")
         pod_name_command = "kubectl get pods --no-headers | awk '/resource-blocker/ { print $1 }'"
         try:
             pod_name = subprocess.check_output(pod_name_command, shell=True).decode().strip()

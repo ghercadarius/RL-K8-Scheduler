@@ -7,6 +7,7 @@ class JMeter:
         self.test_path = test_path
 
     def upload_test(self):
+        print("Uploading test...")
         self.upload_command = f"""curl -X POST "http://localhost:9095/upload_test" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "file=@{self.test_path}" """
         try:
             result = subprocess.run(self.upload_command, shell=True, check=True, capture_output=True, text=True)
@@ -17,6 +18,7 @@ class JMeter:
             print(e.output)
 
     def run_test(self):
+        print("Running test...")
         self.run_command = """curl -X POST "http://localhost:9095/run" -H "accept: application/json" -d "" """
         try:
             result = subprocess.run(self.run_command, shell=True, check=True, capture_output=True, text=True)
@@ -28,6 +30,7 @@ class JMeter:
             print(e.output)
 
     def stop_test(self):
+        print("Stopping test...")
         self.stop_command = """curl -X POST "http://localhost:9095/stop" -H "accept: application/json" -d "" """
         try:
             result = subprocess.run(self.stop_command, shell=True, check=True, capture_output=True, text=True)

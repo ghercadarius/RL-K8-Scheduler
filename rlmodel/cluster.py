@@ -2,7 +2,6 @@ import subprocess
 
 import gym
 
-from main import testingApp
 from resource_blocker import ResourceBlocker
 from node import Node
 from app import App
@@ -17,18 +16,22 @@ class Cluster(gym.Env):
         self.action_space = gym.spaces.Discrete(3) # 3 different nodes to choose from
         self.test_app = test_app # Application to be deployed on the cluster
         self.jmeter = jmeter # JMeter instance for load testing
+        print("Initialized Cluster environment with 0 nodes.")
 
     def add_node(self, node: Node):
         # Add a new node to the cluster
         self.nodes.append(node)
         self.num_nodes += 1
+        print("Added node:", node.name, "to the cluster. Total nodes:", self.num_nodes)
 
     def get_state(self):
+        print("Getting the current state of the cluster...")
         # Placeholder: Return the current state of the cluster as an array
         # Implement: Aggregate metrics from all nodes (e.g., CPU, RAM, etc.)
         final_state = []
         for node in self.nodes:
             if node is not None:
+                print("Simulating metrics for node:", node.name)
                 ResourceBlocker(node.get_sim_metrics()) # convert node metrics to real kvm metrics
                 node_power = Cluster.get_power() # get power consumption in joules over 10 seconds
                 real_metrics = Cluster.get_real_metrics() # get real metrics from the kvm host
@@ -41,6 +44,14 @@ class Cluster(gym.Env):
     def step(self, action):
         # Placeholder: Apply an action to the cluster and return (next_state, reward, done, info)
         # Implement: Apply resource blocking, update node metrics, calculate reward, check if done
+        if action < 0 or action >= len(self.nodes): # check if action is valid
+            if not self.nodes[action].is_valid():
+                reward = -1000 # Invalid action, penalize heavily. Each pod should have be deployed on a node with enough resources
+                done = True
+                for node in self.nodes:
+                    if node is not None and node.real_metrics is not {}:
+                        done = done and node.is_done()
+                return self.get_state(), reward, done
         if action == 0:
             # deploy application on node 0
             self.apply_action(0)
@@ -51,16 +62,22 @@ class Cluster(gym.Env):
             # deploy application on node 2
             self.apply_action(2)
         next_state = []
+        done = True
         for node in self.nodes:
             if node is not None:
+                done = done and node.is_done() # see if we have a node that is not done
                 next_state.extend(node.get_state_list())
-        reward = 0.0  # Dummy reward
-        done = False  # Dummy done flag
+        reward = -self.nodes[action].real_metrics['power_usage']  # maximize reward by minimizing power usage
+        if done:
+            reward += 10
         return next_state, reward, done
 
     def reset(self):
         # Placeholder: Reset the cluster to an initial state
         # Implement: Reset all node metrics and any environment state
+        self.nodes = []
+        self.num_nodes = 0
+        ResourceBlocker.reset_resource_blocker()
         return self.get_state()
 
     def render(self, mode='human'):
@@ -68,7 +85,8 @@ class Cluster(gym.Env):
         # Implement: Print node metrics or plot them
         for node in self.nodes:
             if node is not None:
-                print(f"Node {node.name} metrics: {node.get_metrics()}")
+                print(f"Node {node.name} metrics: {node.get_state_list()}")
+
 
     def apply_action(self, node_index: int):
         # Placeholder: Actually apply the action to the cluster
@@ -89,6 +107,7 @@ class Cluster(gym.Env):
 
     @staticmethod
     def get_power(host_ip: str="172.16.100.1"):
+        print("Getting power consumption from the host...")
         ssh_command = f"sshpass -p 'Dar1us2oo3' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null darius@{host_ip} 'echo 'Dar1us2oo3' | sudo -S ./kvm_power_monitor.sh'"
         # Execute the command and capture the output
         power_consumption = 0
@@ -99,7 +118,7 @@ class Cluster(gym.Env):
                 lines = output.splitlines()
                 joule_values = []
                 for line in lines:
-                    if ',' in line and not line.startswith("Sec"):
+                    if ',' in line and not line.startswith("Sec") and not line.startswith("VM") and not line.startswith("Total"):
                         parts = line.split(',')
                         if len(parts) == 2:
                             try:
@@ -119,6 +138,7 @@ class Cluster(gym.Env):
 
     @staticmethod
     def get_real_metrics(host_ip: str="172.16.100.1"):
+        print("Getting real metrics from the host...")
         ssh_command = f"sshpass -p 'Dar1us2oo3' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null darius@{host_ip} 'echo 'Dar1us2oo3' | sudo -S ./metrics-monitor.sh'"
         # Execute the command and capture the output
         metrics = {}
