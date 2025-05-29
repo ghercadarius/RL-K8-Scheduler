@@ -15,6 +15,10 @@ echo "deleting prometheus container"
 docker rm -f prometheus-server
 echo "deleted prometheus container"
 
+echo "deleting jmeter server pod"
+docker rm -f jmeter-server
+echo "deleted jmeter server pod"
+
 echo "deleting prometheus config file"
 rm -f prometheus/prometheus.yml
 echo "deleted prometheus config file"

@@ -7,6 +7,7 @@ class Node:
         :param name: Kubernetes node name
         """
         self.name = name
+        self.real_metrics = None  # will get updated with real metrics from the kvm host
         if metrics is not None:
             self.cpu = metrics['cpu'] # percentage
             self.ram = metrics['ram'] # in mb
@@ -22,7 +23,7 @@ class Node:
             self.network_bandwidth = random.uniform(0, 100)
             self.power_usage = 0.0
 
-    def update_metrics(self, metrics: dict):
+    def update_sim_metrics(self, metrics: dict):
         self.cpu = metrics['cpu']
         self.ram = metrics['ram']
         self.disk_read = metrics['disk_read']
@@ -30,7 +31,25 @@ class Node:
         self.network_bandwidth = metrics['network_bandwidth']
         self.power_usage = metrics['power_usage']
 
-    def update_metric(self, name, value):
+    def update_real_metrics(self, metrics: dict):
+        """
+        Update the real metrics of the node.
+        :param metrics: dict of real metrics
+        """
+        self.real_metrics = metrics
+
+    def update_real_metric(self, name, value):
+        """
+        Update a single real metric for the node.
+        :param name: Name of the metric (e.g., 'cpu', 'ram', etc.)
+        :param value: New value for the metric
+        """
+        if self.real_metrics is not None and name in self.real_metrics:
+            self.real_metrics[name] = value
+        else:
+            raise ValueError(f"Metric '{name}' does not exist in Node's real metrics.")
+
+    def update_sim_metric(self, name, value):
         """
         Update a single metric for the node.
         :param name: Name of the metric (e.g., 'cpu', 'ram', etc.)
@@ -42,7 +61,7 @@ class Node:
             raise ValueError(f"Metric '{name}' does not exist in Node.")
 
 
-    def get_metrics(self) -> dict:
+    def get_sim_metrics(self) -> dict:
         """
         :return: dict of metrics in fixed order
         """
@@ -55,4 +74,4 @@ class Node:
         """
         :return: list of metrics in fixed order
         """
-        return [self.cpu, self.ram, self.disk_read, self.disk_write, self.network_bandwidth, self.power_usage]
+        return [self.real_metrics['cpu'], self.real_metrics['ram'], self.real_metrics['disk_read'], self.real_metrics['disk_write'], self.real_metrics['network_bandwidth'], self.real_metrics['power_usage']]

@@ -45,6 +45,9 @@ kubectl apply -f deployments/deployment-resource-blocker.yaml
 kubectl apply -f deployments/service-resource-blocker.yaml
 echo "Resource blocker pod created"
 
+bash ./jmeterStart.sh
+echo "JMeter server started successfully."
+
 
 
 

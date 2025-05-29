@@ -1,9 +1,16 @@
 import gym
 import numpy as np
+
+from cluster import Cluster
 from dqn_agent import DQNAgent
+from app import App
+from jmeter import JMeter
 
 # ---- USER MUST DEFINE: environment, state_size, action_size ----
-env = gym.make("CartPole-v1")  # example; replace with your env
+testingApp = App("/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/deployment-test-app.yaml", "/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/service-test-app.yaml") # deployments path
+jmeter = JMeter("/home/darius/licenta/RL-K8-Scheduler/testApp/testFile/test-app-test.jmx") # jmeter test file path
+jmeter.upload_test()
+env = Cluster(testingApp, jmeter)  # example; replace with your env
 state_size = np.prod(env.observation_space.shape)
 action_size = env.action_space.n
 

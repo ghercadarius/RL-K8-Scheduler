@@ -1,4 +1,5 @@
 import subprocess
+import time
 
 import requests
 
@@ -97,6 +98,15 @@ class ResourceBlocker:
             if pod_name:
                 reset_command = f"kubectl delete pod {pod_name}"
                 subprocess.run(reset_command, shell=True, check=True)
+                # Wait for the pod to be recreated
+                print("Waiting for resource blocker pod to be recreated...")
+                while True:
+                    status_command = "kubectl get pods --no-headers | awk '/resource-blocker/ { print $3 }'"
+                    status = subprocess.check_output(status_command, shell=True).decode().strip()
+                    if status == "Running":
+                        break
+                    print("Resource blocker pod is not ready yet. Waiting...")
+                    time.sleep(2)
                 print("Resource blocker reset successfully.")
             else:
                 print("No resource blocker pod found.")

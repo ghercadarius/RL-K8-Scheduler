@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testing-app
+  labels:
+    app: testing-app
+spec:
+  selector:
+    matchLabels:
+      app: testing-app
+  template:
+    metadata:
+      labels:
+        app: testing-app
+    spec:
+      containers:
+        - name: testing-app
+          image: ghercadarius/testapp:latest
+          ports:
+            - containerPort: 5000

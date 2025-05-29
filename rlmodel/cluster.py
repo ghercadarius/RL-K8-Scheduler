@@ -2,16 +2,21 @@ import subprocess
 
 import gym
 
+from main import testingApp
 from resource_blocker import ResourceBlocker
 from node import Node
+from app import App
+from jmeter import JMeter
 
 class Cluster(gym.Env):
-    def __init__(self):
+    def __init__(self, test_app: App, jmeter: JMeter):
         # Initialize the cluster with a list of Node objects
         self.num_nodes = 0
         self.nodes = []  # Replace with actual Node instances
         self.max_ram = 12288
         self.action_space = gym.spaces.Discrete(3) # 3 different nodes to choose from
+        self.test_app = test_app # Application to be deployed on the cluster
+        self.jmeter = jmeter # JMeter instance for load testing
 
     def add_node(self, node: Node):
         # Add a new node to the cluster
@@ -24,11 +29,11 @@ class Cluster(gym.Env):
         final_state = []
         for node in self.nodes:
             if node is not None:
-                node_rb = ResourceBlocker(node.get_metrics()) # convert node metrics to real kvm metrics
+                ResourceBlocker(node.get_sim_metrics()) # convert node metrics to real kvm metrics
                 node_power = Cluster.get_power() # get power consumption in joules over 10 seconds
                 real_metrics = Cluster.get_real_metrics() # get real metrics from the kvm host
-                node.update_metrics(real_metrics) # update node metrics with real metrics
-                node.update_metric('power_usage', node_power) # update node power usage with real power consumption
+                node.update_real_metrics(real_metrics) # update node metrics with real metrics
+                node.real_metrics['power_usage'] = node_power # update real metrics with power consumption
                 final_state.extend(node.get_state_list())  # Flatten the node metrics into the final state list
                 ResourceBlocker.reset_resource_blocker() # delete the pod to reset and force a new one to be created
         return final_state
@@ -45,7 +50,10 @@ class Cluster(gym.Env):
         elif action == 2:
             # deploy application on node 2
             self.apply_action(2)
-        next_state = self.get_state()
+        next_state = []
+        for node in self.nodes:
+            if node is not None:
+                next_state.extend(node.get_state_list())
         reward = 0.0  # Dummy reward
         done = False  # Dummy done flag
         info = {}     # Extra info if needed
@@ -63,10 +71,22 @@ class Cluster(gym.Env):
             if node is not None:
                 print(f"Node {node.name} metrics: {node.get_metrics()}")
 
-    def apply_action(self, action):
+    def apply_action(self, node_index: int):
         # Placeholder: Actually apply the action to the cluster
         # Implement: Use ResourceBlocker or similar to change node resources
-        pass
+        if node_index > len(self.nodes) - 1 or node_index < 0:
+            raise ValueError("Invalid node index")
+        action_node = self.nodes[node_index]
+        ResourceBlocker(action_node.get_sim_metrics())
+        self.test_app.runApp()
+        self.test_app.getAppStatus()
+        self.jmeter.run_test()
+        cur_power = Cluster.get_power()
+        real_metrics = Cluster.get_real_metrics()
+        real_metrics['power_usage'] = cur_power
+        action_node.update_real_metrics(real_metrics)
+
+
 
     @staticmethod
     def get_power(host_ip: str="172.16.100.1"):
