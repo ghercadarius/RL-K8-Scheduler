@@ -93,6 +93,7 @@ print("Server started")
 cpuBlocker = CPU()
 diskBlocker = DISK()
 networkBlocker = NETWORK()
+memoryBlocker = MEMORY()
 
 @app.route('/cpu', methods=['POST'])
 def compute():
@@ -309,11 +310,10 @@ def load():
               type: integer
               example: 100
     """
-    global dataset
     size_mb = int(request.json.get('size_mb', 100))
     print("Loading data of size {} MB".format(size_mb), file=sys.stderr)
     mb_factor = 1024 * 1024 // 40
-    dataset = [random.random() for _ in range(size_mb * mb_factor)]
+    memoryBlocker.dataset = [random.random() for _ in range(size_mb * mb_factor)]
     return jsonify({"status": "loaded", "size_mb": size_mb})
 
 
@@ -336,9 +336,8 @@ def get_data():
                 type: number
               example: [0.123, 0.456, 0.789, 0.101, 0.112, 0.131, 0.415, 0.161, 0.718, 0.192]
     """
-    return jsonify({"data": dataset[:10]})
+    return jsonify({"data": memoryBlocker.dataset[:10]})
 
 @app.route('/healthz')
 def healthz():
     return 'OK', 200
-

@@ -1,0 +1,136 @@
+import subprocess
+
+import gym
+
+from resource_blocker import ResourceBlocker
+from node import Node
+
+class Cluster(gym.Env):
+    def __init__(self):
+        # Initialize the cluster with a list of Node objects
+        self.num_nodes = 0
+        self.nodes = []  # Replace with actual Node instances
+        self.max_ram = 12288
+        self.action_space = gym.spaces.Discrete(3) # 3 different nodes to choose from
+
+    def add_node(self, node: Node):
+        # Add a new node to the cluster
+        self.nodes.append(node)
+        self.num_nodes += 1
+
+    def get_state(self):
+        # Placeholder: Return the current state of the cluster as an array
+        # Implement: Aggregate metrics from all nodes (e.g., CPU, RAM, etc.)
+        final_state = []
+        for node in self.nodes:
+            if node is not None:
+                node_rb = ResourceBlocker(node.get_metrics()) # convert node metrics to real kvm metrics
+                node_power = Cluster.get_power() # get power consumption in joules over 10 seconds
+                real_metrics = Cluster.get_real_metrics() # get real metrics from the kvm host
+                node.update_metrics(real_metrics) # update node metrics with real metrics
+                node.update_metric('power_usage', node_power) # update node power usage with real power consumption
+                final_state.extend(node.get_state_list())  # Flatten the node metrics into the final state list
+                ResourceBlocker.reset_resource_blocker() # delete the pod to reset and force a new one to be created
+        return final_state
+
+    def step(self, action):
+        # Placeholder: Apply an action to the cluster and return (next_state, reward, done, info)
+        # Implement: Apply resource blocking, update node metrics, calculate reward, check if done
+        if action == 0:
+            # deploy application on node 0
+            self.apply_action(0)
+        elif action == 1:
+            # deploy application on node 1
+            self.apply_action(1)
+        elif action == 2:
+            # deploy application on node 2
+            self.apply_action(2)
+        next_state = self.get_state()
+        reward = 0.0  # Dummy reward
+        done = False  # Dummy done flag
+        info = {}     # Extra info if needed
+        return next_state, reward, done, info
+
+    def reset(self):
+        # Placeholder: Reset the cluster to an initial state
+        # Implement: Reset all node metrics and any environment state
+        return self.get_state()
+
+    def render(self, mode='human'):
+        # Placeholder: Print or visualize the current state
+        # Implement: Print node metrics or plot them
+        for node in self.nodes:
+            if node is not None:
+                print(f"Node {node.name} metrics: {node.get_metrics()}")
+
+    def apply_action(self, action):
+        # Placeholder: Actually apply the action to the cluster
+        # Implement: Use ResourceBlocker or similar to change node resources
+        pass
+
+    @staticmethod
+    def get_power(host_ip: str="172.16.100.1"):
+        ssh_command = f"sshpass -p 'Dar1us2oo3' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null darius@{host_ip} 'echo 'Dar1us2oo3' | sudo -S ./kvm_power_monitor.sh'"
+        # Execute the command and capture the output
+        power_consumption = 0
+        try:
+            result = subprocess.run(ssh_command, shell=True, check=True, capture_output=True, text=True)
+            output = result.stdout.strip()
+            if output:
+                lines = output.splitlines()
+                joule_values = []
+                for line in lines:
+                    if ',' in line and not line.startswith("Sec"):
+                        parts = line.split(',')
+                        if len(parts) == 2:
+                            try:
+                                joule_value = float(parts[1].strip())
+                                joule_values.append(joule_value)
+                            except ValueError:
+                                print(f"Invalid joule value in line: {line}")
+                power_consumption = sum(joule_values)
+            else:
+                print("No output received from the command.")
+                power_consumption = 0.0
+        except subprocess.CalledProcessError as e:
+            print(f"Error executing command: {e}")
+            power_consumption = 0.0
+        # return power_consumption
+        return power_consumption # power consumption in joules over 10 seconds
+
+    @staticmethod
+    def get_real_metrics(host_ip: str="172.16.100.1"):
+        ssh_command = f"sshpass -p 'Dar1us2oo3' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null darius@{host_ip} 'echo 'Dar1us2oo3' | sudo -S ./metrics-monitor.sh'"
+        # Execute the command and capture the output
+        metrics = {}
+        try:
+            result = subprocess.run(ssh_command, shell=True, check=True, capture_output=True, text=True)
+            output = result.stdout
+            if output:
+                lines = output.strip().splitlines()
+                for line in lines:
+                    if line.startswith("CPU Usage:"):
+                        # Example: CPU Usage: 25%
+                        metrics['cpu'] = float(line.split(":")[1].strip().replace('%', ''))
+                    elif line.startswith("RAM Usage:"):
+                        # Example: RAM Usage: 7056 MB used of 31755 MB (22%)
+                        parts = line.split()
+                        metrics['ram'] = float(parts[2])  # used MB
+                    elif line.startswith("Disk Usage:"):
+                        # Example: Disk Usage: Disk Read: 26 MB/s, Write: 1365 MB/s
+                        read_part = line.split("Disk Read:")[1].split(",")[0].strip()
+                        write_part = line.split("Write:")[1].strip()
+                        metrics['disk_read'] = float(read_part.split()[0])
+                        metrics['disk_write'] = float(write_part.split()[0])
+                    elif line.startswith("Network Usage:"):
+                        # Example: Network Usage: Net Rx: 0 MBps, Tx: 0 MBps (iface enp0s31f6)
+                        rx_part = line.split("Net Rx:")[1].split(",")[0].strip()
+                        tx_part = line.split("Tx:")[1].split()[0].strip()
+                        metrics['network_bandwidth'] = float(rx_part.split()[0]) + float(tx_part)
+            else:
+                print("No output received from the command.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error executing command: {e}")
+        # return power_consumption
+        return metrics  # Placeholder value for testing
+
