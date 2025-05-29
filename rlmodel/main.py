@@ -11,8 +11,8 @@ testingApp = App("/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/deploy
 jmeter = JMeter("/home/darius/licenta/RL-K8-Scheduler/testApp/testFile/test-app-test.jmx") # jmeter test file path
 jmeter.upload_test()
 env = Cluster(testingApp, jmeter)  # example; replace with your env
-state_size = np.prod(env.observation_space.shape)
-action_size = env.action_space.n
+state_size = len(env.get_state())  # example; replace with your env's state size
+action_size = 3  # example; replace with your env's action size
 
 # ---- HYPERPARAMETERS ----
 num_episodes = 500

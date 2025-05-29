@@ -56,8 +56,7 @@ class Cluster(gym.Env):
                 next_state.extend(node.get_state_list())
         reward = 0.0  # Dummy reward
         done = False  # Dummy done flag
-        info = {}     # Extra info if needed
-        return next_state, reward, done, info
+        return next_state, reward, done
 
     def reset(self):
         # Placeholder: Reset the cluster to an initial state
