@@ -103,38 +103,32 @@ class Cluster(gym.Env):
         real_metrics['power_usage'] = cur_power
         action_node.update_real_metrics(real_metrics)
 
-
-
     @staticmethod
-    def get_power(host_ip: str="172.16.100.1"):
+    def get_power(host_ip: str = "172.16.100.1"):
         print("Getting power consumption from the host...")
-        ssh_command = f"sshpass -p 'Dar1us2oo3' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null darius@{host_ip} 'echo 'Dar1us2oo3' | sudo -S ./kvm_power_monitor.sh'"
-        # Execute the command and capture the output
-        power_consumption = 0
+        ssh_command = (
+            f"sshpass -p 'Dar1us2oo3' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
+            f"darius@{host_ip} 'echo 'Dar1us2oo3' | sudo -S ./kvm_power_monitor.sh'"
+        )
+        avg_watt_value = 0.0
         try:
             result = subprocess.run(ssh_command, shell=True, check=True, capture_output=True, text=True)
             output = result.stdout.strip()
             if output:
                 lines = output.splitlines()
-                joule_values = []
                 for line in lines:
-                    if ',' in line and not line.startswith("Sec") and not line.startswith("VM") and not line.startswith("Total"):
-                        parts = line.split(',')
-                        if len(parts) == 2:
-                            try:
-                                joule_value = float(parts[1].strip())
-                                joule_values.append(joule_value)
-                            except ValueError:
-                                print(f"Invalid joule value in line: {line}")
-                power_consumption = sum(joule_values)
+                    if line.startswith("Average VM Power"):
+                        # Example: Average VM Power over 100ms: 0.0230875 Watts
+                        try:
+                            avg_watt_value = float(line.split(":")[1].split()[0])
+                            break
+                        except (IndexError, ValueError):
+                            continue
             else:
                 print("No output received from the command.")
-                power_consumption = 0.0
         except subprocess.CalledProcessError as e:
             print(f"Error executing command: {e}")
-            power_consumption = 0.0
-        # return power_consumption
-        return power_consumption # power consumption in joules over 10 seconds
+        return avg_watt_value
 
     @staticmethod
     def get_real_metrics(host_ip: str="172.16.100.1"):
