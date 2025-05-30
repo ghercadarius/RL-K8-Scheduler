@@ -1,3 +1,4 @@
+import json
 import subprocess
 import time
 
@@ -39,15 +40,25 @@ class App:
 
     def getAppStatus(self):
         print("Checking application status...")
-        health_check_endpoint = f"http://172.16.100.3:30085/test" # check to see if the app is up
+        health_check_endpoint = "http://172.16.100.3:30085/test"
         while True:
             try:
-                response = subprocess.run(f"curl -s {health_check_endpoint}", shell=True, check=True, capture_output=True, text=True)
-                if response.stdout.strip() == "OK":
-                    print("Application is running.")
-                    break
+                response = subprocess.run(
+                    f"curl -s {health_check_endpoint}",
+                    shell=True, check=True, capture_output=True, text=True
+                )
+                if response.stdout:
+                    try:
+                        data = json.loads(response.stdout)
+                        if data.get("message") == "Test app is running":
+                            print("Application is running.")
+                            break
+                        else:
+                            print("Application is not running properly. Retrying...")
+                    except json.JSONDecodeError:
+                        print("Invalid JSON response. Retrying...")
                 else:
-                    print("Application is not running properly. Retrying...")
+                    print("No response from application. Retrying...")
             except subprocess.CalledProcessError as e:
                 print(f"Error checking application status: {e}")
-            time.sleep(2)
+            time.sleep(5)

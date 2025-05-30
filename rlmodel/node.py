@@ -7,14 +7,14 @@ class Node:
         :param name: Kubernetes node name
         """
         self.name = name
-        self.real_metrics = None  # will get updated with real metrics from the kvm host
+        self.real_metrics = {}  # will get updated with real metrics from the kvm host
         if metrics is not None:
             self.cpu = metrics['cpu'] # percentage
             self.ram = metrics['ram'] # in mb
             self.disk_read = metrics['disk_read'] # in mbps
             self.disk_write = metrics['disk_write'] # in mbps
             self.network_bandwidth = metrics['network_bandwidth'] # in mbps
-            self.power_usage = 0 # in joules, are calculated when creating the agent state
+            self.power_usage = 0 # in miliwatts, are calculated when creating the agent state
         else:
             self.cpu = random.uniform(0,1) # it represents the free cpu percentage
             self.ram = int(random.uniform(0, 12288))
@@ -36,7 +36,11 @@ class Node:
         Update the real metrics of the node.
         :param metrics: dict of real metrics
         """
-        self.real_metrics = metrics
+        self.real_metrics['cpu'] = metrics['cpu']
+        self.real_metrics['ram'] = metrics['ram']
+        self.real_metrics['disk_read'] = metrics['disk_read']
+        self.real_metrics['disk_write'] = metrics['disk_write']
+        self.real_metrics['network_bandwidth'] = metrics['network_bandwidth']
 
     def update_real_metric(self, name, value):
         """
@@ -44,10 +48,8 @@ class Node:
         :param name: Name of the metric (e.g., 'cpu', 'ram', etc.)
         :param value: New value for the metric
         """
-        if self.real_metrics is not None and name in self.real_metrics:
-            self.real_metrics[name] = value
-        else:
-            raise ValueError(f"Metric '{name}' does not exist in Node's real metrics.")
+        self.real_metrics[name] = value
+
 
     def update_sim_metric(self, name, value):
         """
@@ -66,14 +68,14 @@ class Node:
         :return: dict of metrics in fixed order
         """
         return_dict = {'cpu': self.cpu, 'ram': self.ram, 'disk_read': self.disk_read, 'disk_write': self.disk_write,
-                       'network_bandwidth': self.network_bandwidth,
-                       'power_usage': self.power_usage}
+                       'network_bandwidth': self.network_bandwidth}
         return return_dict
 
     def get_state_list(self) -> list:
         """
         :return: list of metrics in fixed order
         """
+        print("Real metrics:", self.real_metrics)
         return [self.real_metrics['cpu'], self.real_metrics['ram'], self.real_metrics['disk_read'], self.real_metrics['disk_write'], self.real_metrics['network_bandwidth'], self.real_metrics['power_usage']]
 
     def is_valid(self) -> bool:
@@ -81,6 +83,7 @@ class Node:
         Check if the node is valid (not None).
         :return: True if the node is valid, False otherwise
         """
+        print(self.get_sim_metrics())
         if self.cpu > 0.95 or self.ram > 12000 or self.disk_read > 470  or self.disk_write > 470 or self.network_bandwidth > 90:
             return False
         return True
@@ -90,6 +93,9 @@ class Node:
         Check if the node is done (not valid).
         :return: True if the node is done, False otherwise
         """
+        if self.real_metrics == {}:
+            return False
+        print(self.real_metrics)
         if self.real_metrics['cpu'] > 95 or self.real_metrics['ram'] > 11500 or self.real_metrics['disk_read'] > 450 \
                 or self.real_metrics['disk_write'] > 450 or self.real_metrics['network_bandwidth'] > 90:
             return True

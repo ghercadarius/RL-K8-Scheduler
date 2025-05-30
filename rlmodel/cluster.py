@@ -42,16 +42,17 @@ class Cluster(gym.Env):
         return final_state
 
     def step(self, action):
+        print("Taking a step in the environment with action:", action)
         # Placeholder: Apply an action to the cluster and return (next_state, reward, done, info)
         # Implement: Apply resource blocking, update node metrics, calculate reward, check if done
-        if action < 0 or action >= len(self.nodes): # check if action is valid
-            if not self.nodes[action].is_valid():
-                reward = -1000 # Invalid action, penalize heavily. Each pod should have be deployed on a node with enough resources
-                done = True
-                for node in self.nodes:
-                    if node is not None and node.real_metrics is not {}:
-                        done = done and node.is_done()
-                return self.get_state(), reward, done
+        if action < 0 or action >= len(self.nodes):
+            print("Action out of range.")
+            return self.get_state(), -10000, True  # Invalid action, return state with heavy penalty
+        if not self.nodes[action].is_valid():
+            print("Invalid action: Node is not valid. Not enough resources or node is None.")
+            reward = -10000  # Invalid action, penalize heavily. Each pod should have be deployed on a node with enough resources
+            done = True
+            return self.get_state(), reward, done
         if action == 0:
             # deploy application on node 0
             self.apply_action(0)
@@ -69,7 +70,7 @@ class Cluster(gym.Env):
                 next_state.extend(node.get_state_list())
         reward = -self.nodes[action].real_metrics['power_usage']  # maximize reward by minimizing power usage
         if done:
-            reward += 10
+            reward += 100
         return next_state, reward, done
 
     def reset(self):
@@ -78,6 +79,8 @@ class Cluster(gym.Env):
         self.nodes = []
         self.num_nodes = 0
         ResourceBlocker.reset_resource_blocker()
+        self.jmeter.stop_test()
+        self.test_app.deleteApp()
         return self.get_state()
 
     def render(self, mode='human'):
@@ -91,17 +94,26 @@ class Cluster(gym.Env):
     def apply_action(self, node_index: int):
         # Placeholder: Actually apply the action to the cluster
         # Implement: Use ResourceBlocker or similar to change node resources
+        print("Applying action:", node_index)
         if node_index > len(self.nodes) - 1 or node_index < 0:
             raise ValueError("Invalid node index")
         action_node = self.nodes[node_index]
+        # simulate the blocked resources
         ResourceBlocker(action_node.get_sim_metrics())
+        # start the test app on the desired node
         self.test_app.runApp()
+        # check to see if it is running
         self.test_app.getAppStatus()
+        # run the jmeter test
         self.jmeter.run_test()
         cur_power = Cluster.get_power()
-        real_metrics = Cluster.get_real_metrics()
-        real_metrics['power_usage'] = cur_power
-        action_node.update_real_metrics(real_metrics)
+        action_node.update_real_metrics(Cluster.get_real_metrics())
+        action_node.update_real_metric('power_usage', cur_power)  # update the node with the current power usage
+        # stop the jmeter test
+        self.jmeter.stop_test()
+        # delete the test app
+        self.test_app.deleteApp()
+        # update the node with the real metrics
 
     @staticmethod
     def get_power(host_ip: str = "172.16.100.1"):
@@ -118,7 +130,7 @@ class Cluster(gym.Env):
                 lines = output.splitlines()
                 for line in lines:
                     if line.startswith("Average VM Power"):
-                        # Example: Average VM Power over 100ms: 0.0230875 Watts
+                        # Example: Average VM Power over 100ms: 607.488 mWatts - miliwatts
                         try:
                             avg_watt_value = float(line.split(":")[1].split()[0])
                             break
@@ -128,6 +140,7 @@ class Cluster(gym.Env):
                 print("No output received from the command.")
         except subprocess.CalledProcessError as e:
             print(f"Error executing command: {e}")
+            avg_watt_value = 10000  # Default to 0 if command fails or no output
         return avg_watt_value
 
     @staticmethod
@@ -164,6 +177,12 @@ class Cluster(gym.Env):
                 print("No output received from the command.")
         except subprocess.CalledProcessError as e:
             print(f"Error executing command: {e}")
+            metrics['cpu'] = 0.0
+            metrics['ram'] = 0.0
+            metrics['disk_read'] = 0.0
+            metrics['disk_write'] = 0.0
+            metrics['network_bandwidth'] = 0.0
+        print("Real metrics obtained:", metrics)
         # return power_consumption
         return metrics  # Placeholder value for testing
 

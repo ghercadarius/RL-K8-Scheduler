@@ -44,7 +44,7 @@ for ((i=1; i<=SAMPLES; i++)); do
     PREV_C=$CUR_C
 done
 
-AVG_POWER=$(awk "BEGIN{print $VM_JOULES_TOTAL/10.0}")   # 100 ms
+AVG_POWER=$(awk "BEGIN{print $VM_JOULES_TOTAL*100.0}")   # 100 ms
 
 echo "-----"
-echo "Average VM Power over 100ms: $AVG_POWER Watts"
+echo "Average VM Power over 100ms: $AVG_POWER mWatts - miliwatts"

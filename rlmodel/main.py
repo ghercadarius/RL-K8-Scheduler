@@ -48,9 +48,10 @@ agent = DQNAgent(
 )
 
 model_file = ""
-user_input = input("Write the path to the model file, or press Enter to create a new file: ")
+# user_input = input("Write the path to the model file, or press Enter to create a new file: ")
+user_input = ""
 if user_input == "":
-    user_input = input("Write the path to the new model file: ")
+    # user_input = input("Write the path to the new model file: ")
     model_file = user_input
 else:
     model_file = user_input
@@ -61,13 +62,16 @@ else:
     except FileNotFoundError:
         print(f"No model found at {model_file}, starting training from scratch.")
 
-run_mode = input("Write 'train' to train the agent, or 'test' to run a trained agent: ").strip().lower()
+model_file="modeltest.pth" # DEBUG
+
+# run_mode = input("Write 'train' to train the agent, or 'test' to run a trained agent: ").strip().lower()
+run_mode = 'train' # DEBUG
 if run_mode == 'train':
     print("Training mode selected.")
 # ---- MAIN TRAINING LOOP ----
     for episode in range(1, num_episodes + 1):
-        add_nodes_to_cluster()
         state = env.reset()
+        add_nodes_to_cluster()
         total_reward = 0.0
 
         for t in range(max_steps_per_ep):
@@ -75,7 +79,7 @@ if run_mode == 'train':
             action = agent.select_action(state)
 
             # 2. Step the env
-            next_state, reward, done, _, _ = env.step(action)
+            next_state, reward, done = env.step(action)
 
             # 3. Store transition & learn
             agent.store(state, action, reward, next_state, float(done))
