@@ -11,7 +11,7 @@ from node import Node
 
 # ---- USER MUST DEFINE: environment, state_size, action_size ----
 print("Initialized testing app: /home/darius/licenta/RL-K8-Scheduler/testApp/deployment/deployment-test-app.yaml")
-testingApp = App("/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/deployment-test-app.yaml", "/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/service-test-app.yaml") # deployments path
+testingApp = App("/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/deployment-test-app.yaml", "/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/service-test-app.yaml", "/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/deployment-test-app-temp.yaml") # deployments path
 print("Initialized JMeter test file: /home/darius/licenta/RL-K8-Scheduler/testApp/testFile/test-app-test.jmx")
 jmeter = JMeter("/home/darius/licenta/RL-K8-Scheduler/testApp/testFile/test-app-test.jmx") # jmeter test file path
 jmeter.upload_test()

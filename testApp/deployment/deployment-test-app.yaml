@@ -5,6 +5,8 @@ metadata:
   labels:
     app: testing-app
 spec:
+  replicas: REPLICA_NUMBER
+  # Replace REPLICA_NUMBER with the desired number of replicas
   selector:
     matchLabels:
       app: testing-app

@@ -7,7 +7,15 @@ class Node:
         :param name: Kubernetes node name
         """
         self.name = name
-        self.real_metrics = {}  # will get updated with real metrics from the kvm host
+        self.real_metrics = {
+            'cpu': 0.0,  # percentage
+            'ram': 0,  # in mb
+            'disk_read': 0,  # in mbps
+            'disk_write': 0,  # in mbps
+            'network_bandwidth': 0,  # in mbps
+            'power_usage': 0.0  # in miliwatts, will be calculated when creating the agent state
+        }  # will get updated with real metrics from the kvm host
+        self.app_instances = 0
         if metrics is not None:
             self.cpu = metrics['cpu'] # percentage
             self.ram = metrics['ram'] # in mb
@@ -16,11 +24,11 @@ class Node:
             self.network_bandwidth = metrics['network_bandwidth'] # in mbps
             self.power_usage = 0 # in miliwatts, are calculated when creating the agent state
         else:
-            self.cpu = random.uniform(0,1) # it represents the free cpu percentage
+            self.cpu = random.uniform(0,0.5) # it represents the free cpu percentage
             self.ram = int(random.uniform(0, 12288))
-            self.disk_read = int(random.uniform(0, 500))
-            self.disk_write = int(random.uniform(0, 500))
-            self.network_bandwidth = int(random.uniform(0, 100))
+            self.disk_read = int(random.uniform(0, 50))
+            self.disk_write = int(random.uniform(0, 50))
+            self.network_bandwidth = int(random.uniform(0, 10))
             self.power_usage = 0.0
 
     def update_sim_metrics(self, metrics: dict):
@@ -96,7 +104,7 @@ class Node:
         if self.real_metrics == {}:
             return False
         print(self.real_metrics)
-        if self.real_metrics['cpu'] > 95 or self.real_metrics['ram'] > 11500 or self.real_metrics['disk_read'] > 450 \
-                or self.real_metrics['disk_write'] > 450 or self.real_metrics['network_bandwidth'] > 90:
+        if self.real_metrics['cpu'] > 95 or self.real_metrics['ram'] > 28000 or self.real_metrics['disk_read'] > 1500 \
+                or self.real_metrics['disk_write'] > 1500 or self.real_metrics['network_bandwidth'] > 50:
             return True
         return False

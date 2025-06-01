@@ -33,11 +33,17 @@ class Cluster(gym.Env):
             if node is not None:
                 print("Simulating metrics for node:", node.name)
                 ResourceBlocker(node.get_sim_metrics()) # convert node metrics to real kvm metrics
+                if node.app_instances > 0:
+                    print(f"Node {node.name} has {node.app_instances} app instances running. Simulating app")
+                    self.test_app.runApp(node.app_instances) # Run the application on the node
+                    self.test_app.getAppStatus()
+                print("Collecting real metrics for node:", node.name)
                 node_power = Cluster.get_power() # get power consumption in joules over 10 seconds
                 real_metrics = Cluster.get_real_metrics() # get real metrics from the kvm host
                 node.update_real_metrics(real_metrics) # update node metrics with real metrics
                 node.real_metrics['power_usage'] = node_power # update real metrics with power consumption
                 final_state.extend(node.get_state_list())  # Flatten the node metrics into the final state list
+                self.test_app.deleteApp()
                 ResourceBlocker.reset_resource_blocker() # delete the pod to reset and force a new one to be created
         return final_state
 
@@ -70,7 +76,7 @@ class Cluster(gym.Env):
                 next_state.extend(node.get_state_list())
         reward = -self.nodes[action].real_metrics['power_usage']  # maximize reward by minimizing power usage
         if done:
-            reward += 100
+            reward += 10000
         return next_state, reward, done
 
     def reset(self):
@@ -97,18 +103,18 @@ class Cluster(gym.Env):
         print("Applying action:", node_index)
         if node_index > len(self.nodes) - 1 or node_index < 0:
             raise ValueError("Invalid node index")
-        action_node = self.nodes[node_index]
+        self.nodes[node_index].app_instances += 1  # Increment the number of app instances on the node
         # simulate the blocked resources
-        ResourceBlocker(action_node.get_sim_metrics())
+        ResourceBlocker(self.nodes[node_index].get_sim_metrics())
         # start the test app on the desired node
-        self.test_app.runApp()
+        self.test_app.runApp(self.nodes[node_index].app_instances)  # Run the application on the node
         # check to see if it is running
         self.test_app.getAppStatus()
         # run the jmeter test
         self.jmeter.run_test()
         cur_power = Cluster.get_power()
-        action_node.update_real_metrics(Cluster.get_real_metrics())
-        action_node.update_real_metric('power_usage', cur_power)  # update the node with the current power usage
+        self.nodes[node_index].update_real_metrics(Cluster.get_real_metrics())
+        self.nodes[node_index].update_real_metric('power_usage', cur_power)  # update the node with the current power usage
         # stop the jmeter test
         self.jmeter.stop_test()
         # delete the test app
