@@ -6,6 +6,8 @@ from resource_blocker import ResourceBlocker
 from node import Node
 from app import App
 from jmeter import JMeter
+import time
+
 
 class Cluster(gym.Env):
     def __init__(self, test_app: App, jmeter: JMeter):
@@ -18,11 +20,13 @@ class Cluster(gym.Env):
         self.jmeter = jmeter # JMeter instance for load testing
         print("Initialized Cluster environment with 0 nodes.")
 
-    def add_node(self, node: Node):
+    def add_nodes_to_cluster(self, num_nodes: int = 3):
         # Add a new node to the cluster
-        self.nodes.append(node)
-        self.num_nodes += 1
-        print("Added node:", node.name, "to the cluster. Total nodes:", self.num_nodes)
+        for i in range(num_nodes):
+            node = Node(str(i))
+            self.nodes.append(node)
+            self.num_nodes += 1
+            print("Added node:", node.name, "to the cluster. Total nodes:", self.num_nodes)
 
     def get_state(self):
         print("Getting the current state of the cluster...")
@@ -84,10 +88,11 @@ class Cluster(gym.Env):
         # Implement: Reset all node metrics and any environment state
         self.nodes = []
         self.num_nodes = 0
-        ResourceBlocker.reset_resource_blocker()
         self.jmeter.stop_test()
         self.test_app.deleteApp()
-        return self.get_state()
+        # restart the cluster
+        ResourceBlocker.reset_resource_blocker()
+        print("Successfully reset the cluster and restarted it.")
 
     def render(self, mode='human'):
         # Placeholder: Print or visualize the current state

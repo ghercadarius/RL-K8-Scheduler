@@ -5,8 +5,13 @@ import time
 import requests
 
 class ResourceBlocker:
+    deployment_path = ""
+    service_path = ""
+
     def __init__(self, node: dict, rb_ip: str = "172.16.100.3:30080"):
         self.rb_ip = rb_ip
+        self.timeout = 5 # seconds
+        self.retries = 5 # number of retries
         self.block_cpu(node['cpu'])
         self.block_ram(node['ram'])
         if node['disk_read'] > 0 and node['disk_write'] > 0:
@@ -15,7 +20,7 @@ class ResourceBlocker:
             self.block_disk_read(node['disk_read'])
         elif node['disk_write'] > 0:
             self.block_disk_write(node['disk_write'])
-        self.block_network(node['network_bandwidth'])
+        # self.block_network(node['network_bandwidth'])
 
 
     def block_cpu(self, percentage: float):
@@ -26,12 +31,19 @@ class ResourceBlocker:
             "blocked_factor": int(100 * percentage),
             "input": 50
         }
-        try:
-            response = requests.post(url, json=json_data)
-            response.raise_for_status()  # Raise an error for bad responses
-            print(f"CPU blocking response: {response.json()}")
-        except requests.RequestException as e:
-            print(f"Error blocking CPU: {e}")
+        for attempt in range(self.retries):
+            try:
+                response = requests.post(url, json=json_data, timeout=self.timeout)
+                response.raise_for_status()  # Raise an error for bad responses
+                print(f"CPU blocking response: {response.json()}")
+                return
+            except requests.Timeout:
+                print(f"Attempt {attempt + 1} failed: Timeout while blocking CPU. Retrying...")
+                time.sleep(1)
+            except requests.RequestException as e:
+                print(f"Error blocking CPU: {e}")
+                break
+        print("Failed to block CPU after multiple attempts.")
 
     def block_ram(self, value: float):
         print("Blocking RAM...")
@@ -39,12 +51,19 @@ class ResourceBlocker:
         json_data = {
             "size_mb": value
         }
-        try:
-            response = requests.post(url, json=json_data)
-            response.raise_for_status()  # Raise an error for bad responses
-            print(f"RAM blocking response: {response.json()}")
-        except requests.RequestException as e:
-            print(f"Error blocking RAM: {e}")
+        for attempt in range(self.retries):
+            try:
+                response = requests.post(url, json=json_data, timeout=self.timeout)
+                response.raise_for_status()  # Raise an error for bad responses
+                print(f"RAM blocking response: {response.json()}")
+                return
+            except requests.Timeout:
+                print(f"Attempt {attempt + 1} failed: Timeout while blocking RAM. Retrying...")
+                time.sleep(1)
+            except requests.RequestException as e:
+                print(f"Error blocking RAM: {e}")
+                break
+        print("Failed to block RAM after multiple attempts.")
 
 
     def block_disk_readwrite(self, read: float, write: float):
@@ -54,12 +73,19 @@ class ResourceBlocker:
             "read_speed_mbps": read,
             "write_speed_mbps": write
         }
-        try:
-            response = requests.post(url, json=json_data)
-            response.raise_for_status()  # Raise an error for bad responses
-            print(f"Disk blocking response: {response.json()}")
-        except requests.RequestException as e:
-            print(f"Error blocking disk read/write: {e}")
+        for attempt in range(self.retries):
+            try:
+                response = requests.post(url, json=json_data, timeout=self.timeout)
+                response.raise_for_status()  # Raise an error for bad responses
+                print(f"Disk blocking response: {response.json()}")
+                return
+            except requests.Timeout:
+                print(f"Attempt {attempt + 1} failed: Timeout while blocking disk read/write. Retrying...")
+                time.sleep(1)
+            except requests.RequestException as e:
+                print(f"Error blocking disk read/write: {e}")
+                break
+        print("Failed to block disk read/write after multiple attempts.")
 
     def block_disk_read(self, read: float):
         print("Blocking Disk Read...")
@@ -67,12 +93,19 @@ class ResourceBlocker:
         json_data = {
             "read_speed_mbps": read
         }
-        try:
-            response = requests.post(url, json=json_data)
-            response.raise_for_status()  # Raise an error for bad responses
-            print(f"Disk read blocking response: {response.json()}")
-        except requests.RequestException as e:
-            print(f"Error blocking disk read: {e}")
+        for attempt in range(self.retries):
+            try:
+                response = requests.post(url, json=json_data)
+                response.raise_for_status()  # Raise an error for bad responses
+                print(f"Disk read blocking response: {response.json()}")
+                return
+            except requests.Timeout:
+                print(f"Attempt {attempt + 1} failed: Timeout while blocking disk read. Retrying...")
+                time.sleep(1)
+            except requests.RequestException as e:
+                print(f"Error blocking disk read: {e}")
+                break
+        print("Failed to block disk read after multiple attempts.")
 
     def block_disk_write(self, write: float):
         print("Blocking Disk Write...")
@@ -80,12 +113,19 @@ class ResourceBlocker:
         json_data = {
             "write_speed_mbps": write
         }
-        try:
-            response = requests.post(url, json=json_data)
-            response.raise_for_status()  # Raise an error for bad responses
-            print(f"Disk write blocking response: {response.json()}")
-        except requests.RequestException as e:
-            print(f"Error blocking disk write: {e}")
+        for attempt in range(self.retries):
+            try:
+                response = requests.post(url, json=json_data)
+                response.raise_for_status()  # Raise an error for bad responses
+                print(f"Disk write blocking response: {response.json()}")
+                return
+            except requests.Timeout:
+                print(f"Attempt {attempt + 1} failed: Timeout while blocking disk write. Retrying...")
+                time.sleep(1)
+            except requests.RequestException as e:
+                print(f"Error blocking disk write: {e}")
+                break
+        print("Failed to block disk write after multiple attempts.")
 
     def block_network(self, value: float):
         print("Blocking Network...")
@@ -116,23 +156,23 @@ class ResourceBlocker:
     @staticmethod
     def reset_resource_blocker():
         print("Resetting resource blocker...")
-        pod_name_command = "kubectl get pods --no-headers | awk '/resource-blocker/ { print $1 }'"
+        deployment_delete_command = "kubectl delete -f " + ResourceBlocker.deployment_path
+        deployment_apply_command = "kubectl apply -f " + ResourceBlocker.deployment_path
         try:
-            pod_name = subprocess.check_output(pod_name_command, shell=True).decode().strip()
-            if pod_name:
-                reset_command = f"kubectl delete pod {pod_name}"
-                subprocess.run(reset_command, shell=True, check=True)
-                # Wait for the pod to be recreated
-                print("Waiting for resource blocker pod to be recreated...")
-                while True:
-                    status_command = "kubectl get pods --no-headers | awk '/resource-blocker/ { print $3 }'"
-                    status = subprocess.check_output(status_command, shell=True).decode().strip()
-                    if status == "Running":
-                        break
-                    print("Resource blocker pod is not ready yet. Waiting...")
-                    time.sleep(2)
-                print("Resource blocker reset successfully.")
-            else:
-                print("No resource blocker pod found.")
+            subprocess.run(deployment_delete_command, shell=True, check=True)
+            print("Resource blocker deployment deleted successfully.")
+            time.sleep(5)
+            subprocess.run(deployment_apply_command, shell=True, check=True)
+            print("Resource blocker deployment applied successfully.")
+            # Wait for the resource blocker pod to be ready
+            print("Waiting for resource blocker pod to be recreated...")
+            while True:
+                status_command = "kubectl get pods --no-headers | awk '/resource-blocker/ { print $3 }'"
+                status = subprocess.check_output(status_command, shell=True).decode().strip()
+                if status == "Running":
+                    break
+                print("Resource blocker pod is not ready yet. Waiting...")
+                time.sleep(2)
+            print("Resource blocker reset successfully.")
         except subprocess.CalledProcessError as e:
             print(f"Error resetting resource blocker: {e}")

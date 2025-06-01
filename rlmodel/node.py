@@ -26,8 +26,8 @@ class Node:
         else:
             self.cpu = random.uniform(0,0.5) # it represents the free cpu percentage
             self.ram = int(random.uniform(0, 12288))
-            self.disk_read = int(random.uniform(0, 50))
-            self.disk_write = int(random.uniform(0, 50))
+            self.disk_read = int(random.uniform(0, 2000))
+            self.disk_write = int(random.uniform(0, 2000))
             self.network_bandwidth = int(random.uniform(0, 10))
             self.power_usage = 0.0
 
@@ -92,7 +92,7 @@ class Node:
         :return: True if the node is valid, False otherwise
         """
         print(self.get_sim_metrics())
-        if self.cpu > 0.95 or self.ram > 12000 or self.disk_read > 470  or self.disk_write > 470 or self.network_bandwidth > 90:
+        if self.cpu > 0.95 or self.ram > 12000 or self.disk_read > 4000  or self.disk_write > 4000 or self.network_bandwidth > 90:
             return False
         return True
 
@@ -104,7 +104,7 @@ class Node:
         if self.real_metrics == {}:
             return False
         print(self.real_metrics)
-        if self.real_metrics['cpu'] > 95 or self.real_metrics['ram'] > 28000 or self.real_metrics['disk_read'] > 1500 \
-                or self.real_metrics['disk_write'] > 1500 or self.real_metrics['network_bandwidth'] > 50:
+        if self.real_metrics['cpu'] > 95 or self.real_metrics['ram'] > 28000 or self.real_metrics['disk_read'] > 5000 \
+                or self.real_metrics['disk_write'] > 5000 or self.real_metrics['network_bandwidth'] > 50:
             return True
         return False

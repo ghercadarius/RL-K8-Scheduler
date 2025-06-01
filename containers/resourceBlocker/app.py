@@ -14,12 +14,8 @@ from flask import Flask, request, jsonify, Response
 
 class CPU:
     def __init__(self):
-        self.totalFibonacciCalls = 1
         self.num_cores = multiprocessing.cpu_count()
     def fibonacci(self, n):
-        self.totalFibonacciCalls += 1
-        if self.totalFibonacciCalls % 50000 == 0:
-            print(f"Total Fibonacci calls: {self.totalFibonacciCalls}")
         if n <= 1:
             return n
         else:
@@ -42,7 +38,6 @@ class DISK:
             start_t = time.time()
             while True:
                 data = f.read(self.mb_size)
-                print(f"!! reading {data[0:3]} !!", file=sys.stderr)
                 if not data:
                     f.seek(0)
                 cur_t = time.time() - start_t
@@ -54,7 +49,6 @@ class DISK:
             start_t = time.time()
             while True:
                 f.write(os.urandom(self.mb_size * 100))
-                print("!! writing !!", file=sys.stderr)
                 cur_t = time.time() - start_t
                 sleep_t = max(0, int((self.mb_size / (self.write_speed_mbps * self.mb_size)) - cur_t))
                 time.sleep(sleep_t)

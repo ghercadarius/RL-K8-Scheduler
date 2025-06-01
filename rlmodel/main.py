@@ -1,3 +1,5 @@
+import datetime
+
 import gym
 import numpy as np
 
@@ -6,10 +8,15 @@ from dqn_agent import DQNAgent
 from app import App
 from jmeter import JMeter
 from node import Node
+from benchmark import compare_rl_vs_round_robin
+from resource_blocker import ResourceBlocker
+import datetime
 
-
+start_time = np.datetime64('now', 's')  # Get the current time in seconds
 
 # ---- USER MUST DEFINE: environment, state_size, action_size ----
+ResourceBlocker.deployment_path = "/home/darius/licenta/RL-K8-Scheduler/minikube/deployments/deployment-resource-blocker.yaml"
+ResourceBlocker.service_path = "/home/darius/licenta/RL-K8-Scheduler/minikube/deployments/service-resource-blocker.yaml"
 print("Initialized testing app: /home/darius/licenta/RL-K8-Scheduler/testApp/deployment/deployment-test-app.yaml")
 testingApp = App("/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/deployment-test-app.yaml", "/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/service-test-app.yaml", "/home/darius/licenta/RL-K8-Scheduler/testApp/deployment/deployment-test-app-temp.yaml") # deployments path
 print("Initialized JMeter test file: /home/darius/licenta/RL-K8-Scheduler/testApp/testFile/test-app-test.jmx")
@@ -18,14 +25,8 @@ jmeter.upload_test()
 print("Initialized cluster environment")
 env = Cluster(testingApp, jmeter)  # example; replace with your env
 
-def add_nodes_to_cluster():
-    global action_size, env
-    env.reset()
-    for i in range(3):
-        node = Node(str(i), None)
-        env.add_node(node)
 
-add_nodes_to_cluster()  # Add nodes to the cluster
+env.add_nodes_to_cluster()  # Add nodes to the cluster
 print("Added nodes to the cluster.")
 state_size = len(env.get_state())  # example; replace with your env's state size
 action_size = env.action_space.n
@@ -48,10 +49,10 @@ agent = DQNAgent(
 )
 
 model_file = ""
-# user_input = input("Write the path to the model file, or press Enter to create a new file: ")
-user_input = ""
+user_input = input("Write the path to the model file, or press Enter to create a new file: ")
+# user_input = "" # DEBUG
 if user_input == "":
-    # user_input = input("Write the path to the new model file: ")
+    user_input = input("Write the path to the new model file: ")
     model_file = user_input
 else:
     model_file = user_input
@@ -62,20 +63,24 @@ else:
     except FileNotFoundError:
         print(f"No model found at {model_file}, starting training from scratch.")
 
-model_file="modeltest.pth" # DEBUG
+# model_file="modeltest.pth" # DEBUG
 
-# run_mode = input("Write 'train' to train the agent, or 'test' to run a trained agent: ").strip().lower()
-run_mode = 'train' # DEBUG
+run_mode = input("Write 'train' to train the agent, or 'test' to run a trained agent: ").strip().lower()
+# run_mode = 'train' # DEBUG
 if run_mode == 'train':
     print("Training mode selected.")
 # ---- MAIN TRAINING LOOP ----
     for episode in range(1, num_episodes + 1):
-        state = env.reset()
-        add_nodes_to_cluster()
+        env.reset()
+        env.add_nodes_to_cluster()
+        state = env.get_state()  # Get the initial state from the environment
         total_reward = 0.0
 
         for t in range(max_steps_per_ep):
             # 1. Select action
+            if len(state) != state_size:
+                print(f"Warning: State size mismatch! Expected {state_size}, got {len(state)}")
+                break
             action = agent.select_action(state)
 
             # 2. Step the env
@@ -92,8 +97,8 @@ if run_mode == 'train':
                 break
 
         print(f"Episode {episode:3d} | Reward: {total_reward:.2f}")
-        # Save the model every 10 episodes
-        if episode % 10 == 0:
+        # Save the model every 5 episodes
+        if episode % 5 == 0:
             agent.save(model_file)
             print(f"Model saved to {model_file} at episode {episode}")
         # Update target network every 1000 steps
@@ -104,10 +109,17 @@ else:
     # ---- RUNNING A TRAINED AGENT ---- # need to write testing code
     print("Testing mode selected.")
     agent.load(model_file)
-    add_nodes_to_cluster()
-    state = env.reset()
-    done = False
-    while not done:
-        action = agent.select_action(state)
-        state, _, done, _ = env.step(action)
-        env.render()
+    print(f"Model loaded from {model_file}")
+    rl_rewards, rr_rewards = compare_rl_vs_round_robin(agent, env, num_episodes=20, max_steps=200)
+    print("Testing completed. Writing results to file...")
+    # write the current date to the file name
+    date_name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file_name = f"benchmark_results_{date_name}.txt"
+    with open("benchmark_results.txt", "w") as f:
+        f.write("RL Rewards:\n")
+        f.write(", ".join(map(str, rl_rewards)) + "\n")
+        f.write("Round Robin Rewards:\n")
+        f.write(", ".join(map(str, rr_rewards)) + "\n")
+
+end_time = np.datetime64('now', 's')  # Get the current time in seconds
+print(f"Total time taken: {end_time - start_time} seconds")

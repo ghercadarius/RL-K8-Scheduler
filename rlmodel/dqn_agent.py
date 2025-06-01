@@ -22,6 +22,7 @@ class DQNAgent:
         device: str = None
     ):
         # device setup
+        print("Using device:", device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
 
         # Main and target networks
@@ -74,6 +75,12 @@ class DQNAgent:
         # Sample a batch
         transitions = self.replay_buffer.sample(self.batch_size)
         states, actions, rewards, next_states, dones = zip(*transitions)
+
+        expected_shape = 18  # Assuming state has 18 features, adjust if necessary
+        valid_indices = [i for i, s in enumerate(states) if np.shape(s) == (expected_shape,)]
+        if len(valid_indices) < self.batch_size:
+            print("Warning: Not enough valid states to sample from. Skipping update.")
+            return
 
         # Convert to tensors
         states      = torch.FloatTensor(states).to(self.device)
