@@ -36,6 +36,7 @@ class Cluster(gym.Env):
         for node in self.nodes:
             if node is not None:
                 print("Simulating metrics for node:", node.name)
+                print("Node app instances:", node.app_instances)
                 ResourceBlocker(node.get_sim_metrics()) # convert node metrics to real kvm metrics
                 if node.app_instances > 0:
                     print(f"Node {node.name} has {node.app_instances} app instances running. Simulating app")

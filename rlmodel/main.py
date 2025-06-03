@@ -1,4 +1,5 @@
 import datetime
+import os
 
 import gym
 import numpy as np
@@ -13,6 +14,29 @@ from resource_blocker import ResourceBlocker
 import datetime
 
 start_time = np.datetime64('now', 's')  # Get the current time in seconds
+
+model_file = ""
+user_input = input("Write the path to the model file, or press Enter to create a new file: ")
+new_file = False
+# user_input = "" # DEBUG
+if user_input == "":
+    user_input = input("Write the path to the new model file: ")
+    model_file = user_input
+    new_file = True
+else:
+    model_file = user_input
+    new_file = False
+    # Load the model if the file exists
+    try:
+        if not os.path.exists(model_file):
+            raise FileNotFoundError
+        print(f"Model found in {model_file}")
+    except FileNotFoundError:
+        print(f"No model found at {model_file}, starting training from scratch.")
+        model_file = input("Write the path to the new model file: ")
+        new_file = True
+
+run_mode = input("Write 'train' to train the agent, or 'test' to run a trained agent: ").strip().lower()
 
 # ---- USER MUST DEFINE: environment, state_size, action_size ----
 ResourceBlocker.deployment_path = "/home/darius/licenta/RL-K8-Scheduler/minikube/deployments/deployment-resource-blocker.yaml"
@@ -47,25 +71,11 @@ agent = DQNAgent(
     eps_decay=10_000,             # Decay rate for epsilon (how quickly exploration decreases)
     target_update_freq=500        # How often to update the target network (in steps, for stable Q-learning)
 )
-
-model_file = ""
-user_input = input("Write the path to the model file, or press Enter to create a new file: ")
-# user_input = "" # DEBUG
-if user_input == "":
-    user_input = input("Write the path to the new model file: ")
-    model_file = user_input
-else:
-    model_file = user_input
-    # Load the model if the file exists
-    try:
-        agent.load(model_file)
-        print(f"Model loaded from {model_file}")
-    except FileNotFoundError:
-        print(f"No model found at {model_file}, starting training from scratch.")
+if not new_file:
+    agent.load(model_file)
 
 # model_file="modeltest.pth" # DEBUG
 
-run_mode = input("Write 'train' to train the agent, or 'test' to run a trained agent: ").strip().lower()
 # run_mode = 'train' # DEBUG
 if run_mode == 'train':
     print("Training mode selected.")
