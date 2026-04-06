@@ -118,6 +118,7 @@ start_tunnel_if_needed() {
   local log_file="$ITERATION_DIR/$TUNNEL_LOG_FILE"
   local mk_home="$HOME"
   local mk_path="$PATH"
+  local oci_bin=""
 
   mkdir -p "$(dirname "$pid_file")" "$(dirname "$log_file")"
 
@@ -147,6 +148,14 @@ start_tunnel_if_needed() {
     sudo -v || die "Cannot authenticate sudo for tunnel route setup"
   fi
 
+  if has_command docker; then
+    oci_bin="docker"
+  elif has_command podman; then
+    oci_bin="podman"
+  else
+    die "Neither docker nor podman is available for minikube tunnel"
+  fi
+
   # Keep minikube process in user context and isolate from inherited shell env.
   nohup env -i \
     HOME="$mk_home" \
@@ -156,7 +165,7 @@ start_tunnel_if_needed() {
     LANG="${LANG:-C.UTF-8}" \
     MINIKUBE_HOME="$mk_home/.minikube" \
     CHANGE_MINIKUBE_NONE_USER=true \
-    minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" --alsologtostderr -v=1 >"$log_file" 2>&1 &
+    minikube -p "$MINIKUBE_PROFILE" tunnel --ocibin="$oci_bin" --bind-address="$TUNNEL_BIND_ADDRESS" --alsologtostderr -v=1 >"$log_file" 2>&1 &
 
   local tunnel_pid=$!
   echo "$tunnel_pid" >"$pid_file"
