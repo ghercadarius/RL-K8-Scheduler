@@ -142,6 +142,33 @@ bash scripts/show_latest_power.sh results/<sku_id>/<run_timestamp>
   - `summary_success.csv`
   - `summary_failed.csv`
 
+## Plotting and insights
+
+Use the Python analysis script to aggregate all `run_summary.csv` files,
+generate graphs, and write an insights report.
+
+Install dependencies:
+
+```bash
+pip install pandas matplotlib
+```
+
+Run analysis from `iteration2/`:
+
+```bash
+python3 scripts/plot_results.py --results-dir results --use-latest-per-sku
+```
+
+Output is written to:
+
+- `results/analysis-<timestamp>/cleaned_runs.csv`
+- `results/analysis-<timestamp>/insights.txt`
+- `results/analysis-<timestamp>/throughput_by_sku.png`
+- `results/analysis-<timestamp>/latency_by_sku.png`
+- `results/analysis-<timestamp>/power_by_sku.png`
+- `results/analysis-<timestamp>/throughput_vs_vm_watts.png`
+- `results/analysis-<timestamp>/throughput_heatmap_cpu_memory.png`
+
 ## Troubleshooting
 
 - Startup guard error (`Run startup_suite.sh first`):
