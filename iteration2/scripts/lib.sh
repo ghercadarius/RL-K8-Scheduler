@@ -42,6 +42,7 @@ has_command() {
 dependency_check() {
   require_command minikube
   require_command kubectl
+  require_command jmeter
   require_command awk
   require_command sed
   require_command grep

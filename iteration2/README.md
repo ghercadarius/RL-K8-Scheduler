@@ -131,6 +131,27 @@ Show latest sample for one run:
 bash scripts/show_latest_power.sh results/<sku_id>/<run_timestamp>
 ```
 
+## JMeter load testing behavior
+
+- Load generation now uses `jmeter` in non-GUI mode via `scripts/run_load_test.sh`.
+- The plan file is `jmeter/test-plan.jmx` and uses a random endpoint mix:
+  - `GET /work` with randomized `mode` (`cpu`, `memory`, `io`, `mixed`) and intensity.
+  - `POST /batch` with mixed tasks and randomized intensities.
+- Results produced per run:
+  - `jmeter_results.csv`
+  - `jmeter.log`
+  - `load_requests.csv` (normalized from JMeter output)
+  - `load_summary.csv`
+
+Tune load profile in `config/common.env`:
+
+- `JMETER_THREADS`
+- `JMETER_RAMP_UP_SECONDS`
+- `JMETER_WORK_MIN_INTENSITY`
+- `JMETER_WORK_MAX_INTENSITY`
+- `JMETER_BATCH_MIN_INTENSITY`
+- `JMETER_BATCH_MAX_INTENSITY`
+
 ## Results structure
 
 - Per SKU run:
