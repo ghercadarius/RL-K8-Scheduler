@@ -118,6 +118,7 @@ start_tunnel_if_needed() {
   local log_file="$ITERATION_DIR/$TUNNEL_LOG_FILE"
   local mk_home="$HOME"
   local mk_path="$PATH"
+  local use_sudo="false"
 
   mkdir -p "$(dirname "$pid_file")" "$(dirname "$log_file")"
 
@@ -143,11 +144,19 @@ start_tunnel_if_needed() {
   fi
 
   if sudo -n true >/dev/null 2>&1; then
+    use_sudo="true"
+  else
+    log "sudo -n not available; requesting sudo credentials for minikube tunnel"
+    if sudo -v; then
+      use_sudo="true"
+    fi
+  fi
+
+  if [[ "$use_sudo" == "true" ]]; then
     nohup sudo -n -E env HOME="$mk_home" PATH="$mk_path" CHANGE_MINIKUBE_NONE_USER=true \
       minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" >"$log_file" 2>&1 &
   else
-    nohup env HOME="$mk_home" PATH="$mk_path" CHANGE_MINIKUBE_NONE_USER=true \
-      minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" >"$log_file" 2>&1 &
+    die "Cannot start minikube tunnel without sudo. Authenticate with sudo -v or configure passwordless sudo."
   fi
 
   local tunnel_pid=$!
