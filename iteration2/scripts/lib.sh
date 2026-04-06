@@ -147,9 +147,15 @@ start_tunnel_if_needed() {
     sudo -v || die "Cannot authenticate sudo for tunnel route setup"
   fi
 
-  # Match the known-good manual invocation pattern.
-  nohup sudo -E env HOME="$mk_home" PATH="$mk_path" CHANGE_MINIKUBE_NONE_USER=true \
-    minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" --alsologtostderr -v=1 >"$log_file" 2>&1 &
+  # Run tunnel under a pseudo-TTY to match the known-good interactive path.
+  if has_command script; then
+    local tunnel_cmd
+    tunnel_cmd="sudo -E env HOME=\"$mk_home\" PATH=\"$mk_path\" CHANGE_MINIKUBE_NONE_USER=true minikube -p \"$MINIKUBE_PROFILE\" tunnel --bind-address=\"$TUNNEL_BIND_ADDRESS\" --alsologtostderr -v=1"
+    nohup script -q -c "$tunnel_cmd" /dev/null >"$log_file" 2>&1 &
+  else
+    nohup sudo -E env HOME="$mk_home" PATH="$mk_path" CHANGE_MINIKUBE_NONE_USER=true \
+      minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" --alsologtostderr -v=1 >"$log_file" 2>&1 &
+  fi
 
   local tunnel_pid=$!
   echo "$tunnel_pid" >"$pid_file"
