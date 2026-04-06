@@ -1,0 +1,7 @@
+sku_id,status,exit_code,run_dir,error_timestamp,error_reason
+c1-r2g,failed,29,* Using the kvm2 driver based on user configuration,2026-04-06T18:16:32Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181631Z/c1-r2g.stderr.log
+c1-r4g,failed,29,* Using the kvm2 driver based on user configuration,2026-04-06T18:16:32Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181631Z/c1-r4g.stderr.log
+c2-r2g,failed,80,* Deleting "sku-bench" in kvm2 ...,2026-04-06T18:19:27Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181631Z/c2-r2g.stderr.log
+c2-r4g,failed,1,Waiting for deployment "sample-python-webapp" rollout to finish: 6 of 8 updated replicas are available...,2026-04-06T18:24:12Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181631Z/c2-r4g.stderr.log
+c2-r8g,failed,1,Waiting for deployment "sample-python-webapp" rollout to finish: 6 of 8 updated replicas are available...,2026-04-06T18:28:47Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181631Z/c2-r8g.stderr.log
+c4-r4g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c4-r4g/20260406T182847Z,,

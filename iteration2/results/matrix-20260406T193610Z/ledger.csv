@@ -1,0 +1,4 @@
+sku_id,status,exit_code,run_dir,error_timestamp,error_reason
+c1-r2g,failed,29,* Using the kvm2 driver based on user configuration,2026-04-06T19:36:11Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T193610Z/c1-r2g.stderr.log
+c1-r4g,failed,29,* Using the kvm2 driver based on user configuration,2026-04-06T19:36:12Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T193610Z/c1-r4g.stderr.log
+c2-r2g,failed,80,* Deleting "sku-bench" in kvm2 ...,2026-04-06T19:39:01Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T193610Z/c2-r2g.stderr.log

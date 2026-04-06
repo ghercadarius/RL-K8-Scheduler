@@ -1,0 +1,13 @@
+! Starting v1.39.0, minikube will default to "containerd" container runtime. See #21973 for more info.
+! StartHost failed, but will try again: creating host: create: creating: starting domain: waiting for IP: domain sku-bench didn't return IP after 1m30s
+* Failed to start kvm2 VM. Running "minikube delete -p sku-bench" may fix it: creating host: create: creating: starting domain: waiting for IP: domain sku-bench didn't return IP after 1m30s
+X Exiting due to GUEST_PROVISION: error provisioning guest: Failed to start host: creating host: create: creating: starting domain: waiting for IP: domain sku-bench didn't return IP after 1m30s
+* 
+╭─────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                             │
+│    * If the above advice does not help, please let us know:                                 │
+│      https://github.com/kubernetes/minikube/issues/new/choose                               │
+│                                                                                             │
+│    * Please run `minikube logs --file=logs.txt` and attach logs.txt to the GitHub issue.    │
+│                                                                                             │
+╰─────────────────────────────────────────────────────────────────────────────────────────────╯

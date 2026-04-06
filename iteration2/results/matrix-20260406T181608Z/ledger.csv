@@ -1,0 +1,15 @@
+sku_id,status,exit_code,run_dir,error_timestamp,error_reason
+c1-r2g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c1-r2g.stderr.log
+c1-r4g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c1-r4g.stderr.log
+c2-r2g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c2-r2g.stderr.log
+c2-r4g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c2-r4g.stderr.log
+c2-r8g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c2-r8g.stderr.log
+c4-r4g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c4-r4g.stderr.log
+c4-r8g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c4-r8g.stderr.log
+c4-r16g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c4-r16g.stderr.log
+c8-r8g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c8-r8g.stderr.log
+c8-r16g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c8-r16g.stderr.log
+c8-r24g,failed,126,,2026-04-06T18:16:08Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c8-r24g.stderr.log
+c16-r8g,failed,126,,2026-04-06T18:16:09Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c16-r8g.stderr.log
+c16-r16g,failed,126,,2026-04-06T18:16:09Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c16-r16g.stderr.log
+c16-r24g,failed,126,,2026-04-06T18:16:09Z,see /home/darius/licenta/RL-K8-Scheduler/iteration2/results/matrix-20260406T181608Z/c16-r24g.stderr.log
