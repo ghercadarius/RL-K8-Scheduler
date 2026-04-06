@@ -147,9 +147,16 @@ start_tunnel_if_needed() {
     sudo -v || die "Cannot authenticate sudo for tunnel route setup"
   fi
 
-  # Keep minikube process in user context; minikube will use cached sudo for route ops.
-  nohup env HOME="$mk_home" PATH="$mk_path" CHANGE_MINIKUBE_NONE_USER=true \
-    minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" >"$log_file" 2>&1 &
+  # Keep minikube process in user context and isolate from inherited shell env.
+  nohup env -i \
+    HOME="$mk_home" \
+    PATH="$mk_path" \
+    USER="${SUDO_USER:-$USER}" \
+    LOGNAME="${SUDO_USER:-$USER}" \
+    LANG="${LANG:-C.UTF-8}" \
+    MINIKUBE_HOME="$mk_home/.minikube" \
+    CHANGE_MINIKUBE_NONE_USER=true \
+    minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" --alsologtostderr -v=1 >"$log_file" 2>&1 &
 
   local tunnel_pid=$!
   echo "$tunnel_pid" >"$pid_file"
@@ -171,7 +178,7 @@ stop_tunnel_if_running() {
   local pid
   pid="$(cat "$pid_file")"
   if [[ -n "$pid" ]] && kill -0 "$pid" >/dev/null 2>&1; then
-    log "Stopping minikube tunnel (pid=$pid)"g
+    log "Stopping minikube tunnel (pid=$pid)"
     kill "$pid" >/dev/null 2>&1 || true
     wait "$pid" 2>/dev/null || true
   fi
