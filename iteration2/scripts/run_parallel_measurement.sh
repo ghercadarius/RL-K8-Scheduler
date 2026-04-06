@@ -19,14 +19,14 @@ mkdir -p "$RUN_DIR"
 
 POWER_FILE="$RUN_DIR/power_samples.csv"
 
-"$SCRIPT_DIR/collect_power_metrics.sh" \
+bash "$SCRIPT_DIR/collect_power_metrics.sh" \
   "$TEST_DURATION_SECONDS" \
   "$POWER_SAMPLE_INTERVAL_SECONDS" \
   "$MINIKUBE_PROFILE" \
   "$POWER_FILE" &
 POWER_PID=$!
 
-"$SCRIPT_DIR/run_load_test.sh" \
+bash "$SCRIPT_DIR/run_load_test.sh" \
   "$TARGET_BASE_URL" \
   "$TEST_DURATION_SECONDS" \
   "$RUN_DIR" &

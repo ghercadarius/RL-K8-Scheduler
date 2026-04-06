@@ -48,14 +48,14 @@ NODE_NAME="$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')"
 kubectl label node "$NODE_NAME" sku.id="$SKU_ID" sku.cpus="$CPU" sku.memory-mb="$MEMORY_MB" --overwrite >/dev/null
 
 if [[ "$BUILD_APP_IMAGE" == "true" ]]; then
-  "$SCRIPT_DIR/build_app_image.sh"
+  bash "$SCRIPT_DIR/build_app_image.sh"
 fi
 
-REPLICAS="$("$SCRIPT_DIR/compute_replicas.sh")"
-"$SCRIPT_DIR/deploy_app.sh" "$REPLICAS" "$RUN_DIR"
+REPLICAS="$(bash "$SCRIPT_DIR/compute_replicas.sh")"
+bash "$SCRIPT_DIR/deploy_app.sh" "$REPLICAS" "$RUN_DIR"
 ENDPOINT="$(cat "$RUN_DIR/endpoint.txt")"
 
-"$SCRIPT_DIR/run_parallel_measurement.sh" "$ENDPOINT" "$RUN_DIR"
+bash "$SCRIPT_DIR/run_parallel_measurement.sh" "$ENDPOINT" "$RUN_DIR"
 
 TOTAL_REQUESTS="$(awk -F, 'NR==2 {print $1}' "$RUN_DIR/load_summary.csv" 2>/dev/null || echo 0)"
 SUCCESS_REQUESTS="$(awk -F, 'NR==2 {print $2}' "$RUN_DIR/load_summary.csv" 2>/dev/null || echo 0)"

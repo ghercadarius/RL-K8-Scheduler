@@ -77,7 +77,7 @@ for sku in "${SKUS[@]}"; do
 
   log "Starting SKU: $sku"
   set +e
-  RUN_OUTPUT="$($SCRIPT_DIR/run_sku_test.sh "$sku" 2>"$MATRIX_DIR/${sku}.stderr.log")"
+  RUN_OUTPUT="$(bash "$SCRIPT_DIR/run_sku_test.sh" "$sku" 2>"$MATRIX_DIR/${sku}.stderr.log")"
   EXIT_CODE=$?
   set -e
 
@@ -105,7 +105,7 @@ for sku in "${SKUS[@]}"; do
   fi
 done
 
-"$SCRIPT_DIR/summarize_results.sh" "$MATRIX_DIR" "$LEDGER_FILE"
+bash "$SCRIPT_DIR/summarize_results.sh" "$MATRIX_DIR" "$LEDGER_FILE"
 
 if [[ "$CONTINUE_ON_ERROR" == "true" ]]; then
   log "Matrix run finished with continue-on-error policy"

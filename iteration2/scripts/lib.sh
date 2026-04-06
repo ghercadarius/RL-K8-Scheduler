@@ -116,8 +116,6 @@ EOF
 start_tunnel_if_needed() {
   local pid_file="$ITERATION_DIR/$TUNNEL_PID_FILE"
   local log_file="$ITERATION_DIR/$TUNNEL_LOG_FILE"
-  local mk_home="$HOME"
-  local mk_path="$PATH"
 
   mkdir -p "$(dirname "$pid_file")" "$(dirname "$log_file")"
 
@@ -131,30 +129,10 @@ start_tunnel_if_needed() {
   fi
 
   log "Starting minikube tunnel for profile $MINIKUBE_PROFILE"
-
-  # If the script is invoked with sudo, keep tunnel bound to the original user profile.
-  if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
-    if [[ -n "${SUDO_USER:-}" ]]; then
-      mk_home="$(eval echo "~$SUDO_USER")"
-      mk_path="$mk_home/.minikube/bin:$mk_path"
-    else
-      die "Do not run suite scripts as root; run as your normal user"
-    fi
-  fi
-
-  if ! sudo -n true >/dev/null 2>&1; then
-    log "Requesting sudo credentials for minikube tunnel"
-    sudo -v || die "Cannot authenticate sudo for tunnel route setup"
-  fi
-
-  # Run tunnel under a pseudo-TTY to match the known-good interactive path.
-  if has_command script; then
-    local tunnel_cmd
-    tunnel_cmd="sudo -E env HOME=\"$mk_home\" PATH=\"$mk_path\" CHANGE_MINIKUBE_NONE_USER=true minikube -p \"$MINIKUBE_PROFILE\" tunnel --bind-address=\"$TUNNEL_BIND_ADDRESS\" --alsologtostderr -v=1"
-    nohup script -q -c "$tunnel_cmd" /dev/null >"$log_file" 2>&1 &
+  if sudo -n true >/dev/null 2>&1; then
+    nohup sudo -n minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" >"$log_file" 2>&1 &
   else
-    nohup sudo -E env HOME="$mk_home" PATH="$mk_path" CHANGE_MINIKUBE_NONE_USER=true \
-      minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" --alsologtostderr -v=1 >"$log_file" 2>&1 &
+    nohup minikube -p "$MINIKUBE_PROFILE" tunnel --bind-address="$TUNNEL_BIND_ADDRESS" >"$log_file" 2>&1 &
   fi
 
   local tunnel_pid=$!
