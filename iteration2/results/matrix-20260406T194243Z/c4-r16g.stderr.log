@@ -1,0 +1,38 @@
+! Starting v1.39.0, minikube will default to "containerd" container runtime. See #21973 for more info.
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 282B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 1.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/python:3.11-slim@sha256:9358444059ed78e2975ada2c189f1c1a3144a5dab6f35bff8c981afb38946634
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 63B done
+#5 DONE 0.0s
+
+#6 [4/5] RUN pip install --no-cache-dir -r /app/requirements.txt
+#6 CACHED
+
+#7 [2/5] WORKDIR /app
+#7 CACHED
+
+#8 [3/5] COPY requirements.txt /app/requirements.txt
+#8 CACHED
+
+#9 [5/5] COPY app.py /app/app.py
+#9 CACHED
+
+#10 exporting to image
+#10 exporting layers done
+#10 writing image sha256:aeb818142fe7be189648ac6c8593662138080037b17e4ac51d383923e6471e09 done
+#10 naming to docker.io/sku-bench/sample-python-webapp:local done
+#10 DONE 0.0s

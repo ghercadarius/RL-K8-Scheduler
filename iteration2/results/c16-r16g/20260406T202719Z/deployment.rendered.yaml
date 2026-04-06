@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-python-webapp
+  namespace: sku-bench
+  labels:
+    app: sample-python-webapp
+spec:
+  replicas: 49
+  selector:
+    matchLabels:
+      app: sample-python-webapp
+  template:
+    metadata:
+      labels:
+        app: sample-python-webapp
+    spec:
+      containers:
+      - name: sample-python-webapp
+        image: sku-bench/sample-python-webapp:local
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

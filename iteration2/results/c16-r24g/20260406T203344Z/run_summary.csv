@@ -1,0 +1,2 @@
+sku_id,run_id,cpu,memory_mb,replicas,total_requests,success_requests,avg_latency_ms,avg_vm_watts,avg_host_watts,power_samples,endpoint
+c16-r24g,20260406T203344Z,16,24576,64,606389,606389,17,824200,000000,54,200000,30,http://192.168.39.147:32590

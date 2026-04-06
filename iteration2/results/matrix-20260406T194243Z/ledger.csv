@@ -1,0 +1,10 @@
+sku_id,status,exit_code,run_dir,error_timestamp,error_reason
+c4-r4g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c4-r4g/20260406T194243Z,,
+c4-r8g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c4-r8g/20260406T194904Z,,
+c4-r16g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c4-r16g/20260406T195524Z,,
+c8-r8g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c8-r8g/20260406T200146Z,,
+c8-r16g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c8-r16g/20260406T200808Z,,
+c8-r24g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c8-r24g/20260406T201432Z,,
+c16-r8g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c16-r8g/20260406T202054Z,,
+c16-r16g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c16-r16g/20260406T202719Z,,
+c16-r24g,success,0,/home/darius/licenta/RL-K8-Scheduler/iteration2/results/c16-r24g/20260406T203344Z,,

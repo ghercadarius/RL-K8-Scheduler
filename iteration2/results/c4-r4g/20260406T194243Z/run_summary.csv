@@ -1,0 +1,2 @@
+sku_id,run_id,cpu,memory_mb,replicas,total_requests,success_requests,avg_latency_ms,avg_vm_watts,avg_host_watts,power_samples,endpoint
+c4-r4g,20260406T194243Z,4,4096,12,603675,387843,19,776333,333333,53,000000,30,http://192.168.39.95:31888
