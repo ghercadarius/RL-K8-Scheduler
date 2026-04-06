@@ -171,7 +171,7 @@ stop_tunnel_if_running() {
   local pid
   pid="$(cat "$pid_file")"
   if [[ -n "$pid" ]] && kill -0 "$pid" >/dev/null 2>&1; then
-    log "Stopping minikube tunnel (pid=$pid)"
+    log "Stopping minikube tunnel (pid=$pid)"g
     kill "$pid" >/dev/null 2>&1 || true
     wait "$pid" 2>/dev/null || true
   fi
