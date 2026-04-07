@@ -1,0 +1,16 @@
+SKU Benchmark Insights
+Generated at: 2026-04-07T06:04:18.806289+00:00
+Input runs parsed: 10
+Unique SKUs: 9
+
+Best throughput: c8-r8g (2072.937 req/s)
+Best latency: c8-r8g (17.000 ms)
+Best throughput-per-watt: c16-r16g (0.006 req/s/W)
+Highest VM-attributed power: c4-r16g (840500.000 W)
+
+Correlation replicas vs throughput: 0.645
+Correlation vm_watts vs throughput: -0.335
+
+Best memory for c4: r4g (1292.810 req/s, 19.000 ms)
+Best memory for c8: r8g (2072.937 req/s, 17.000 ms)
+Best memory for c16: r8g (2027.120 req/s, 17.000 ms)

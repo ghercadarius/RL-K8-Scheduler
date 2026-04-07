@@ -1,0 +1,82 @@
+! Starting v1.39.0, minikube will default to "containerd" container runtime. See #21973 for more info.
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 282B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 0.9s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/python:3.11-slim@sha256:9358444059ed78e2975ada2c189f1c1a3144a5dab6f35bff8c981afb38946634
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 5.56kB done
+#5 DONE 0.0s
+
+#6 [2/5] WORKDIR /app
+#6 CACHED
+
+#7 [3/5] COPY requirements.txt /app/requirements.txt
+#7 DONE 0.1s
+
+#8 [4/5] RUN pip install --no-cache-dir -r /app/requirements.txt
+#8 1.948 Collecting flask==3.0.3 (from -r /app/requirements.txt (line 1))
+#8 2.074   Downloading flask-3.0.3-py3-none-any.whl.metadata (3.2 kB)
+#8 2.125 Collecting gunicorn==22.0.0 (from -r /app/requirements.txt (line 2))
+#8 2.164   Downloading gunicorn-22.0.0-py3-none-any.whl.metadata (4.4 kB)
+#8 2.332 Collecting psutil==6.0.0 (from -r /app/requirements.txt (line 3))
+#8 2.380   Downloading psutil-6.0.0-cp36-abi3-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (21 kB)
+#8 2.446 Collecting Werkzeug>=3.0.0 (from flask==3.0.3->-r /app/requirements.txt (line 1))
+#8 2.482   Downloading werkzeug-3.1.8-py3-none-any.whl.metadata (4.0 kB)
+#8 2.526 Collecting Jinja2>=3.1.2 (from flask==3.0.3->-r /app/requirements.txt (line 1))
+#8 2.563   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+#8 2.602 Collecting itsdangerous>=2.1.2 (from flask==3.0.3->-r /app/requirements.txt (line 1))
+#8 2.639   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+#8 2.682 Collecting click>=8.1.3 (from flask==3.0.3->-r /app/requirements.txt (line 1))
+#8 2.719   Downloading click-8.3.2-py3-none-any.whl.metadata (2.6 kB)
+#8 2.759 Collecting blinker>=1.6.2 (from flask==3.0.3->-r /app/requirements.txt (line 1))
+#8 2.795   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+#8 2.852 Collecting packaging (from gunicorn==22.0.0->-r /app/requirements.txt (line 2))
+#8 2.888   Downloading packaging-26.0-py3-none-any.whl.metadata (3.3 kB)
+#8 2.976 Collecting MarkupSafe>=2.0 (from Jinja2>=3.1.2->flask==3.0.3->-r /app/requirements.txt (line 1))
+#8 3.012   Downloading markupsafe-3.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+#8 3.060 Downloading flask-3.0.3-py3-none-any.whl (101 kB)
+#8 3.110    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 101.7/101.7 kB 2.0 MB/s eta 0:00:00
+#8 3.147 Downloading gunicorn-22.0.0-py3-none-any.whl (84 kB)
+#8 3.158    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 84.4/84.4 kB 9.9 MB/s eta 0:00:00
+#8 3.196 Downloading psutil-6.0.0-cp36-abi3-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (290 kB)
+#8 3.268    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 290.5/290.5 kB 4.1 MB/s eta 0:00:00
+#8 3.307 Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+#8 3.345 Downloading click-8.3.2-py3-none-any.whl (108 kB)
+#8 3.355    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 108.4/108.4 kB 15.1 MB/s eta 0:00:00
+#8 3.393 Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+#8 3.432 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+#8 3.444    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 14.4 MB/s eta 0:00:00
+#8 3.483 Downloading werkzeug-3.1.8-py3-none-any.whl (226 kB)
+#8 3.503    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 226.5/226.5 kB 13.1 MB/s eta 0:00:00
+#8 3.542 Downloading packaging-26.0-py3-none-any.whl (74 kB)
+#8 3.549    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 kB 20.2 MB/s eta 0:00:00
+#8 3.587 Downloading markupsafe-3.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+#8 3.654 Installing collected packages: psutil, packaging, MarkupSafe, itsdangerous, click, blinker, Werkzeug, Jinja2, gunicorn, flask
+#8 4.263 Successfully installed Jinja2-3.1.6 MarkupSafe-3.0.3 Werkzeug-3.1.8 blinker-1.9.0 click-8.3.2 flask-3.0.3 gunicorn-22.0.0 itsdangerous-2.2.0 packaging-26.0 psutil-6.0.0
+#8 4.263 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+#8 4.436 
+#8 4.436 [notice] A new release of pip is available: 24.0 -> 26.0.1
+#8 4.436 [notice] To update, run: pip install --upgrade pip
+#8 DONE 4.6s
+
+#9 [5/5] COPY app.py /app/app.py
+#9 DONE 0.0s
+
+#10 exporting to image
+#10 exporting layers
+#10 exporting layers 0.2s done
+#10 writing image sha256:d9b1e7daef21925229fe2b0fd5edfa0ef430ca199412626177793c57d3550ada done
+#10 naming to docker.io/sku-bench/sample-python-webapp:local done
+#10 DONE 0.2s
